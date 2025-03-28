@@ -67,6 +67,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="MA415_midterm_proj_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="MA415_midterm_proj_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="MA415_midterm_proj_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="MA415_midterm_proj_files/libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="MA415_midterm_proj_files/libs/lightable-0.0.1/lightable.css" rel="stylesheet">
 
 
 </head>
@@ -106,6 +108,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="clean-data" class="level3">
 <h3 class="anchored" data-anchor-id="clean-data">Clean Data</h3>
 <p>CLEAN TABLE TO REMOVE ANY REDUNDANT/NA COLUMNS THAT HAVE ONLY ONE VALUE (OR ARE ALSO ALL NA)</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Looking for single value columns in data frame:  strawberry"
+[1] "Columns dropped:"
+       Geo Level      Ag District Ag District Code           County 
+         "STATE"               NA               NA               NA 
+     County ANSI         Zip Code           Region   watershed_code 
+              NA               NA               NA       "00000000" 
+       Watershed 
+              NA </code></pre>
+</div>
+</div>
 <p>CENSUS AND SURVEY HOLD DIFFERENT NUMBER AND TYPES OF DATA SO CREATE TWO NEW TABLES TO SEPERATE THE METHOD OF DATA COLLECTIN –&gt; FIX COMMENTS INSIDE THIS</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
@@ -127,7 +141,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>TALK ABOUT HOW TO GO ABOUT CLEANING THE CHEMICAL COLS</p>
 <p>GLIMPSE OF NEWLY CLEANED TABLE –&gt; INSTEAD OF THIS FORMAT IT MUCH MORE NICELY?? (using KABLE/kablextra)</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(s_sur_ca_fl)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(s_sur_ca_fl)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 12
    Year State   Fruit Category Item  `Meas Type` Metric Domain Type  Name  Code 
@@ -172,6 +186,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>NOW JUST LOOK PARTICULARLY WITHIN THE INCOME DATA TABLE</p>
 <p>NOW FIX HOW THE MONEY VALUES ARE DEPICTED IN THE TABLE (MAKE THEM NUMERIC)</p>
 <p>SEPERATE NEWWLY CLEANED STRAWBERRY DATASET INTO CALIFORNIA AND FLORIDA AND THEN SEPERATE EACH INTO OPERATORS AND PRODUCERS SO JUST PRODUCERS CAN BE LOOKED INTO</p>
+<p>NOW LOOK PARTICULARLY IN THE STRAWBERRY TABLE TO LEARN ABOUT PRODUCTION AND SALES</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 5
+  State      Item                                  Metric         Value `CV (%)`
+  &lt;chr&gt;      &lt;chr&gt;                                 &lt;chr&gt;          &lt;chr&gt; &lt;chr&gt;   
+1 CALIFORNIA " ORGANIC - ACRES HARVESTED"           &lt;NA&gt;          4,228 45.7    
+2 CALIFORNIA " ORGANIC - SALES"                    " MEASURED IN… 311,… 46.0    
+3 CALIFORNIA " ORGANIC - SALES"                    " MEASURED IN… 1,41… 51.7    
+4 CALIFORNIA " FRESH MARKET - SALES"               " MEASURED IN… (D)   (D)     
+5 CALIFORNIA " FRESH MARKET - SALES"               " MEASURED IN… 1,40… 50.6    
+6 CALIFORNIA " PROCESSING - OPERATIONS WITH SALES"  &lt;NA&gt;          7     60.0    </code></pre>
+</div>
+</div>
 </section>
 </section>
 <section id="data-analysis" class="level3">
@@ -183,35 +211,487 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="cell-output cell-output-stderr">
 <pre><code>`summarise()` has grouped output by 'Domain'. You can override using the
+`.groups` argument.
+`summarise()` has grouped output by 'Domain'. You can override using the
 `.groups` argument.</code></pre>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="MA415_midterm_proj_files/figure-html/create%20plot%20to%20investigate%20type%20of%20chemical%20use%20-%20california-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>`summarise()` has grouped output by 'Domain'. You can override using the
-`.groups` argument.</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="MA415_midterm_proj_files/figure-html/create%20plot%20to%20investigate%20type%20of%20chemical%20use%20-%20florida-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="MA415_midterm_proj_files/figure-html/create%20plot%20to%20investigate%20type%20of%20chemical%20use-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>MOST COMMONLY USED CHEMICALS</p>
 <p>DO THE CHEMICAL DATA ANALYSIS –&gt; FIGURE OUT HOW TO PICK THE THREE AND CONTRAST THEIR USE –&gt; for a roow select the category and item that is associated with a speciifc chemical (to see how it is used) –&gt; find the top twenty and see which three are top used between the three?</p>
-<p>filter by chemical type for each state and graph how that is affected by category + item</p>
-<p>look at a specific chemical and see how its use changes over years for both states!!</p>
-<p>INCOME ANALYSIS - FARM SALES</p>
-<p>-ORGANIC STRAW PROCESSING VS FRESH SALES PRICES? #### Data Analysis - Income</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first make the value col numerical</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>s_sur_ca<span class="sc">$</span>Value <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">gsub</span>(<span class="st">","</span>, <span class="st">""</span>, s_sur_ca<span class="sc">$</span>Value))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: NAs introduced by coercion</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>s_sur_fl<span class="sc">$</span>Value <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">gsub</span>(<span class="st">","</span>, <span class="st">""</span>, s_sur_fl<span class="sc">$</span>Value))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: NAs introduced by coercion</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate total usage for California (only "LB" measurements)</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>tot_use_lb_ca <span class="ot">&lt;-</span> s_sur_ca <span class="sc">%&gt;%</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Metric <span class="sc">==</span> <span class="st">" MEASURED IN LB"</span> <span class="sc">&amp;</span> Domain <span class="sc">!=</span> <span class="st">"TOTAL)"</span> <span class="sc">&amp;</span> Domain <span class="sc">!=</span> <span class="st">"FERTILIZER"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Name) <span class="sc">%&gt;%</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="st">`</span><span class="at">Total Usage (LB)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">sum</span>(Value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(<span class="st">`</span><span class="at">Total Usage (LB)</span><span class="st">`</span>))</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate total usage for Florida (only "LB" measurements)</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>tot_use_lb_fl <span class="ot">&lt;-</span> s_sur_fl <span class="sc">%&gt;%</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Metric <span class="sc">==</span> <span class="st">" MEASURED IN LB"</span> <span class="sc">&amp;</span> Domain <span class="sc">!=</span> <span class="st">"TOTAL)"</span> <span class="sc">&amp;</span> Domain <span class="sc">!=</span> <span class="st">"FERTILIZER"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Name) <span class="sc">%&gt;%</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="st">`</span><span class="at">Total Usage (LB)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">sum</span>(Value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(<span class="st">`</span><span class="at">Total Usage (LB)</span><span class="st">`</span>))</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the top 5 chemicals for each state</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>top_chem_ca <span class="ot">&lt;-</span> tot_use_lb_ca <span class="sc">|&gt;</span> <span class="fu">slice</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">11</span>)</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>top_chem_fl <span class="ot">&lt;-</span> tot_use_lb_fl <span class="sc">|&gt;</span> <span class="fu">slice</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">11</span>)</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>top_chem_ca <span class="sc">|&gt;</span></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kbl</span>(<span class="at">caption =</span> <span class="st">"Top 10 Most Used Chemicals in California"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> F, <span class="at">html_font =</span> <span class="st">"Cambria"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Top 10 Most Used Chemicals in California</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Name</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Total Usage (LB)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">CHLOROPICRIN</td>
+<td style="text-align: right;">16991600</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DICHLOROPROPENE</td>
+<td style="text-align: right;">2491200</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SULFUR</td>
+<td style="text-align: right;">1849300</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">METAM-POTASSIUM</td>
+<td style="text-align: right;">1040400</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CAPTAN</td>
+<td style="text-align: right;">856700</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">THIRAM</td>
+<td style="text-align: right;">365800</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">PENDIMETHALIN</td>
+<td style="text-align: right;">82200</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">MALATHION</td>
+<td style="text-align: right;">48500</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BIFENAZATE</td>
+<td style="text-align: right;">45400</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CYPRODINIL</td>
+<td style="text-align: right;">41600</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>top_chem_fl <span class="sc">|&gt;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kbl</span>(<span class="at">caption =</span> <span class="st">"Top 10 Most Used Chemicals in Florida"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> F, <span class="at">html_font =</span> <span class="st">"Cambria"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Top 10 Most Used Chemicals in Florida</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Name</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Total Usage (LB)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">CAPTAN</td>
+<td style="text-align: right;">279100</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">THIRAM</td>
+<td style="text-align: right;">254500</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CYPRODINIL</td>
+<td style="text-align: right;">15200</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">FLUDIOXONIL</td>
+<td style="text-align: right;">10600</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NOVALURON</td>
+<td style="text-align: right;">2600</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SPINETORAM</td>
+<td style="text-align: right;">700</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ACETAMIPRID</td>
+<td style="text-align: right;">500</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CHLORANTRANILIPROLE</td>
+<td style="text-align: right;">400</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">THIAMETHOXAM</td>
+<td style="text-align: right;">400</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ABAMECTIN</td>
+<td style="text-align: right;">100</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>top_chem_ca<span class="sc">$</span>State <span class="ot">&lt;-</span> <span class="st">"California"</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>top_chem_fl<span class="sc">$</span>State <span class="ot">&lt;-</span> <span class="st">"Florida"</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Combine both tables into one</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(top_chem_fl) <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="fu">colnames</span>(top_chem_fl), <span class="st">"_fl"</span>, <span class="at">sep =</span> <span class="st">""</span>)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>top_chem <span class="ot">&lt;-</span> <span class="fu">cbind</span>(top_chem_ca, top_chem_fl)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>top_chem_table <span class="ot">&lt;-</span> top_chem <span class="sc">|&gt;</span> <span class="fu">select</span>(Name, <span class="st">`</span><span class="at">Total Usage (LB)</span><span class="st">`</span>, Name_fl, <span class="st">`</span><span class="at">Total Usage (LB)_fl</span><span class="st">`</span>)</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(top_chem_table) <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">"_fl"</span>, <span class="st">""</span>, <span class="fu">colnames</span>(top_chem_table))</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the combined table using kable</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>top_chem_table <span class="sc">|&gt;</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kbl</span>(<span class="at">caption =</span> <span class="st">"Top 10 Most Used Chemicals in California and Florida"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> F, <span class="at">html_font =</span> <span class="st">"Cambria"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_header_above</span>(<span class="fu">c</span>(<span class="st">"California"</span> <span class="ot">=</span> <span class="dv">2</span>, <span class="st">"Florida"</span> <span class="ot">=</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Top 10 Most Used Chemicals in California and Florida</caption>
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th colspan="2" data-quarto-table-cell-role="th" style="text-align: center; padding-bottom: 0; padding-left: 3px; padding-right: 3px;"><div style="border-bottom: 1px solid #111111; margin-bottom: -1px; ">
+California
+</div></th>
+<th colspan="2" data-quarto-table-cell-role="th" style="text-align: center; padding-bottom: 0; padding-left: 3px; padding-right: 3px;"><div style="border-bottom: 1px solid #111111; margin-bottom: -1px; ">
+Florida
+</div></th>
+</tr>
+<tr class="odd">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Name</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Total Usage (LB)</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Name</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Total Usage (LB)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">CHLOROPICRIN</td>
+<td style="text-align: right;">16991600</td>
+<td style="text-align: left;">CAPTAN</td>
+<td style="text-align: right;">279100</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DICHLOROPROPENE</td>
+<td style="text-align: right;">2491200</td>
+<td style="text-align: left;">THIRAM</td>
+<td style="text-align: right;">254500</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SULFUR</td>
+<td style="text-align: right;">1849300</td>
+<td style="text-align: left;">CYPRODINIL</td>
+<td style="text-align: right;">15200</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">METAM-POTASSIUM</td>
+<td style="text-align: right;">1040400</td>
+<td style="text-align: left;">FLUDIOXONIL</td>
+<td style="text-align: right;">10600</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CAPTAN</td>
+<td style="text-align: right;">856700</td>
+<td style="text-align: left;">NOVALURON</td>
+<td style="text-align: right;">2600</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">THIRAM</td>
+<td style="text-align: right;">365800</td>
+<td style="text-align: left;">SPINETORAM</td>
+<td style="text-align: right;">700</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">PENDIMETHALIN</td>
+<td style="text-align: right;">82200</td>
+<td style="text-align: left;">ACETAMIPRID</td>
+<td style="text-align: right;">500</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">MALATHION</td>
+<td style="text-align: right;">48500</td>
+<td style="text-align: left;">CHLORANTRANILIPROLE</td>
+<td style="text-align: right;">400</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BIFENAZATE</td>
+<td style="text-align: right;">45400</td>
+<td style="text-align: left;">THIAMETHOXAM</td>
+<td style="text-align: right;">400</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CYPRODINIL</td>
+<td style="text-align: right;">41600</td>
+<td style="text-align: left;">ABAMECTIN</td>
+<td style="text-align: right;">100</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+<p>BASED ON THE ABOVE TABLE IT CAN BE SEEN THAT THE THREE MOST USED CHEMICALS COMMON TO BOTH CALIFORNIA AND FLORIDA ARE CAPTAN, THIRAM, AND CYPRODINIL ALL OF WHICH ARE TYPE FUNGICIDE PERHAPS IMPLYING THAT COLLECTIVELY FUNGICIDE ARE THE LARGEST THREAT TO STRAWBERRY GROIWONG</p>
+<p>LOOK AT HOW THE USAGE OF THESE THREE CHEMICALS CHANGE PER YEAR FOR CALIFORNIA AND FLORIDA</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>top_3chem_ca <span class="ot">&lt;-</span> top_chem_ca <span class="sc">|&gt;</span> <span class="fu">filter</span>(Name <span class="sc">==</span> <span class="st">"CAPTAN "</span> <span class="sc">|</span> Name <span class="sc">==</span> <span class="st">"THIRAM "</span> <span class="sc">|</span> Name <span class="sc">==</span><span class="st">"CYPRODINIL "</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>top_3chem_fl <span class="ot">&lt;-</span> top_chem_fl <span class="sc">|&gt;</span> <span class="fu">filter</span>(Name_fl <span class="sc">==</span> <span class="st">"CAPTAN "</span> <span class="sc">|</span> Name_fl <span class="sc">==</span> <span class="st">"THIRAM "</span> <span class="sc">|</span> Name_fl <span class="sc">==</span><span class="st">"CYPRODINIL "</span>)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate yearly trends for the top 5 chemicals in California</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>yr_chem_ca <span class="ot">&lt;-</span> s_sur_ca <span class="sc">%&gt;%</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Name <span class="sc">%in%</span> top_3chem_ca<span class="sc">$</span>Name, Metric <span class="sc">==</span> <span class="st">" MEASURED IN LB"</span> <span class="sc">&amp;</span> Domain <span class="sc">!=</span> <span class="st">"TOTAL)"</span> <span class="sc">&amp;</span> Domain <span class="sc">!=</span> <span class="st">"FERTILIZER"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year, Name) <span class="sc">%&gt;%</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">yearly_usage =</span> <span class="fu">sum</span>(Value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'Year'. You can override using the
+`.groups` argument.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate yearly trends for the top 5 chemicals in Florida</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>yr_chem_fl <span class="ot">&lt;-</span> s_sur_fl <span class="sc">%&gt;%</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Name <span class="sc">%in%</span> top_3chem_fl<span class="sc">$</span>Name_fl, Metric <span class="sc">==</span> <span class="st">" MEASURED IN LB"</span> <span class="sc">&amp;</span> Domain <span class="sc">!=</span> <span class="st">"TOTAL)"</span> <span class="sc">&amp;</span> Domain <span class="sc">!=</span> <span class="st">"FERTILIZER"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year, Name) <span class="sc">%&gt;%</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">yearly_usage =</span> <span class="fu">sum</span>(Value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'Year'. You can override using the
+`.groups` argument.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create line plots for California and Florida</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>yr_chem_ca_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(yr_chem_ca, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> yearly_usage<span class="sc">*</span><span class="fl">1e-3</span>, <span class="at">color =</span> Name, <span class="at">group =</span> Name)) <span class="sc">+</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span>                            </span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span>                           </span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Yearly Usage of Chemicals in California"</span>,</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Year"</span>,</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Yearly Usage (kip)"</span>,</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">"Chemical Type"</span>) <span class="sc">+</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"red"</span>, <span class="st">"blue"</span>, <span class="st">"green"</span>))<span class="sc">+</span> <span class="co"># Customize colors for each chemical</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">2021</span>, <span class="dv">2023</span>))</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>yr_chem_fl_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(yr_chem_fl, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> yearly_usage<span class="sc">*</span><span class="fl">1e-3</span>, <span class="at">color =</span> Name, <span class="at">group =</span> Name)) <span class="sc">+</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span>                            </span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span>                           </span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Yearly Usage of Chemicals in Florida"</span>,</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Year"</span>,</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Yearly Usage (kip)"</span>,</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">"Chemical Type"</span>) <span class="sc">+</span></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"red"</span>, <span class="st">"blue"</span>, <span class="st">"green"</span>))<span class="sc">+</span> <span class="co"># Customize colors for each chemical</span></span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">2021</span>, <span class="dv">2023</span>))</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(yr_chem_ca_plot, yr_chem_fl_plot, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="MA415_midterm_proj_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="data-analysis---income" class="level4">
+<h4 class="anchored" data-anchor-id="data-analysis---income">Data Analysis - Income</h4>
+<p>INCOME ANALYSIS - FARM SALES LOOK AT NET INCOME BASED OFF FARM SALES FROM PRODUCERS IN CA VS FL</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>California and Florida Average Net Income in 2022 by Farm Sales</caption>
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th colspan="2" data-quarto-table-cell-role="th" style="text-align: center; padding-bottom: 0; padding-left: 3px; padding-right: 3px;"><div style="border-bottom: 1px solid #111111; margin-bottom: -1px; ">
+Farm Sales ($)
+</div></th>
+<th colspan="2" data-quarto-table-cell-role="th" style="text-align: center; padding-bottom: 0; padding-left: 3px; padding-right: 3px;"><div style="border-bottom: 1px solid #111111; margin-bottom: -1px; ">
+California
+</div></th>
+<th colspan="2" data-quarto-table-cell-role="th" style="text-align: center; padding-bottom: 0; padding-left: 3px; padding-right: 3px;"><div style="border-bottom: 1px solid #111111; margin-bottom: -1px; ">
+Florida
+</div></th>
+</tr>
+<tr class="odd">
+<th style="text-align: right;" data-quarto-table-cell-role="th">Lower</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Upper</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Value</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">CV (%)</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Value</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">CV (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">999</td>
+<td style="text-align: left;">-$420.67M</td>
+<td style="text-align: left;">-10.7</td>
+<td style="text-align: left;">-$224.16M</td>
+<td style="text-align: left;">-23.9</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1000</td>
+<td style="text-align: right;">2499</td>
+<td style="text-align: left;">-$61.26M</td>
+<td style="text-align: left;">-36.6</td>
+<td style="text-align: left;">-$50.45M</td>
+<td style="text-align: left;">-12.5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2500</td>
+<td style="text-align: right;">4999</td>
+<td style="text-align: left;">-$81.06M</td>
+<td style="text-align: left;">-22.6</td>
+<td style="text-align: left;">-$47.60M</td>
+<td style="text-align: left;">-14.8</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5000</td>
+<td style="text-align: right;">9999</td>
+<td style="text-align: left;">-$92.08M</td>
+<td style="text-align: left;">-16.0</td>
+<td style="text-align: left;">-$44.90M</td>
+<td style="text-align: left;">-25.2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">10000</td>
+<td style="text-align: right;">24999</td>
+<td style="text-align: left;">-$101.38M</td>
+<td style="text-align: left;">-29.6</td>
+<td style="text-align: left;">-$48.35M</td>
+<td style="text-align: left;">-29.4</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">25000</td>
+<td style="text-align: right;">49999</td>
+<td style="text-align: left;">-$113.21M</td>
+<td style="text-align: left;">-25.0</td>
+<td style="text-align: left;">-$21.08M</td>
+<td style="text-align: left;">-64.5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">50000</td>
+<td style="text-align: right;">99999</td>
+<td style="text-align: left;">-$31.06M</td>
+<td style="text-align: left;">(H)</td>
+<td style="text-align: left;">$16.92M</td>
+<td style="text-align: left;">83.8</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">100000</td>
+<td style="text-align: right;">249999</td>
+<td style="text-align: left;">-$57.68M</td>
+<td style="text-align: left;">-88.6</td>
+<td style="text-align: left;">$26.36M</td>
+<td style="text-align: left;">84.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">250000</td>
+<td style="text-align: right;">499999</td>
+<td style="text-align: left;">$203.68M</td>
+<td style="text-align: left;">70.5</td>
+<td style="text-align: left;">$104.15M</td>
+<td style="text-align: left;">25.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">500000</td>
+<td style="text-align: right;">999999</td>
+<td style="text-align: left;">$209.18M</td>
+<td style="text-align: left;">88.7</td>
+<td style="text-align: left;">$108.72M</td>
+<td style="text-align: left;">34.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1000000</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">$12,219.73M</td>
+<td style="text-align: left;">6.4</td>
+<td style="text-align: left;">$2,412.57M</td>
+<td style="text-align: left;">5.9</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+<p>FLORIDA STARTS MAKING A PROFITABLE INCOME AT AN EARLIER FARM SALE RANGE COMPARED TO CALIFORNIA –&gt; A POSITIVE NET INCOME STARTS AS FARM SALES ARE BETWEEN 50000 TO 99999 WHILE CALIFORNIA ONLY STARTS SEEING A POSITIVE NET INCOME WHEN FARM SALES ARE BETWEEN 250000 TO 499999</p>
+<p>INSIGHTS: 1. Difference in Profitability Threshold: Florida starts making a profitable income at a much lower farm sales range (between $50,000 to $99,999).</p>
+<p>In contrast, California only begins seeing a positive net income when farm sales are between $250,000 to $499,999.</p>
+<p>This indicates that, on average, Florida farmers can start turning a profit at lower levels of farm sales compared to California farmers. Florida may have lower operational or fixed costs, better market conditions, or more favorable climate factors, allowing farms to become profitable at a smaller scale. California, on the other hand, may have higher costs or more competition, meaning it requires higher sales to reach profitability.</p>
+<ol start="2" type="1">
+<li>Cost Structures: The fact that Florida becomes profitable at lower sales could also point to differences in cost structures between the two states.</li>
+</ol>
+<p>Florida farmers might have lower labor, land, or production costs, which allows them to become profitable at a lower sales threshold.</p>
+<p>California, with its larger and more established agricultural industry, might experience higher input costs (labor, land, water, regulations, etc.), meaning farms need to sell more to cover these expenses and generate a profit.</p>
+<p>-ORGANIC STRAW PROCESSING VS FRESH SALES PRICES?</p>
+<p>FLORIDA HAS NO PROCESSING DATA AND CALIFORNIA ONLY HAS HIDDEN VALUES FOR FRESH MARKET AND PROCESSING SALES IN $ SO WILL COMPARE ORGANIC + FRESH MARKET SALES MEASURE BY CWT (WEIGHT/VOLUME) BETWEEN THE TWO STATES</p>
+<p>CALIFORNIA HAS INFO FOR ALL THREE WHEN SALES ARE MEASURED BY CWT SO WILL OCMPARE TO SEE WHICH METHOD PRODUCES THE MOST SALES</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="MA415_midterm_proj_files/figure-html/create%20figure%20to%20compare%20organis,%20fresh%20market,%20and%20processing%20sales%20in%20california-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>IN CALIFORNIA A HUGE MAJORITY OF THE SALES COME FROM FRESH MARKET AND ORGANIC COMPARED TO PROCESSING –&lt; CONSUMERS CARE MORE AND ARE MUCH MORE WILLING TO BY FRESH AND ORGANISH FRUITS COMPARED TO PROCESSED ONES</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="MA415_midterm_proj_files/figure-html/create%20figure%20to%20compare%20organic%20+%20fresh%20market%20sales%20between%20california%20and%20florida-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 </section>
 </section>
 </section>
