@@ -27,6 +27,4 @@ MA415_midterm_proj.pdf - PDF version of finalized MA415 Midterm Project (no code
 ## Citations
 Function Help
 
-grepl: 
-
-https://hyperskill.org/university/r-language/grepl-in-r
+grepl: https://hyperskill.org/university/r-language/grepl-in-r
