@@ -20,40 +20,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -100,27 +66,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="usda-nass-strawberry-data-set" class="level2">
 <h2 class="anchored" data-anchor-id="usda-nass-strawberry-data-set">USDA NASS Strawberry Data Set</h2>
-<p>EXPLAIN WHAT IS BEING DONE (FIGURE OUT A BETTER HEADER AND CREATE SUB HEADERS INSTEAD?)</p>
+<p>This document contains the process and results for data cleaning and exploratory data analysis (EDA) OF A USDA NASS Data Set regarding the production and sales of strawberries between the years of 2020 to 2023 in the states of California and Florida.</p>
 <section id="read-in-data" class="level3">
 <h3 class="anchored" data-anchor-id="read-in-data">Read in Data</h3>
-<p>EXPLAIN WHAT I AM READING IN –&gt; LINK TO THE DATA SET THAT IS BEING USED AND THE FUNCTION FILE THAT INCLUDES SOME FUNCTION DEFS THAT I WILL BE USING LATER</p>
+<p>The raw USDA NASS Strawberry Data Set that is read in within the code is provided in the associated Github repository under the file name strawb_mar6.csv. An additional file under the name my_functions.R is also provided in the repository which provides function definitions for functions used within the rest of the code- particularly drop_one_value_col().</p>
 </section>
 <section id="clean-data" class="level3">
 <h3 class="anchored" data-anchor-id="clean-data">Clean Data</h3>
-<p>CLEAN TABLE TO REMOVE ANY REDUNDANT/NA COLUMNS THAT HAVE ONLY ONE VALUE (OR ARE ALSO ALL NA)</p>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] "Looking for single value columns in data frame:  strawberry"
-[1] "Columns dropped:"
-       Geo Level      Ag District Ag District Code           County 
-         "STATE"               NA               NA               NA 
-     County ANSI         Zip Code           Region   watershed_code 
-              NA               NA               NA       "00000000" 
-       Watershed 
-              NA </code></pre>
-</div>
-</div>
-<p>CENSUS AND SURVEY HOLD DIFFERENT NUMBER AND TYPES OF DATA SO CREATE TWO NEW TABLES TO SEPERATE THE METHOD OF DATA COLLECTIN –&gt; FIX COMMENTS INSIDE THIS</p>
+<p>To provide an initial cleaning of the Strawberry Data Set the function drop_one_value_col() is utilized to remove any redundant columns or columns that are entirely NA- which in both cases are columns that only have one value.</p>
+<p>When looking at the cleaned Strawberry Data Set it can be seen that the data set can be further split into two more broad programs of <code>CENSUS</code> and <code>SURVEY</code> as the information (variables of interest) held within both programs vastly differ. For example, the <code>CENSUS</code> data holds information regarding Gains, Losses, and Net Income while the <code>SURVEY</code> data provides insight into utilized chemicals. To therefore ease the process of further data cleaning the cleaned Strawberry Data Set will be split into two new data sets: one consisting of <code>CENSUS</code> data and one consisting of <code>SURVEY</code> data.</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Looking for single value columns in data frame:  straw_cen"
@@ -135,31 +89,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       "SURVEY" "STRAWBERRIES"             NA </code></pre>
 </div>
 </div>
-<p>HOW USING SEPERATE DATA DELIMETER AND WHAT IS THE DELIMETER TO SPLIT DIFF VARIABLES INTO SEPERATE TABLES; use select to remove unwanted cols (for data analysis) –&gt; EXPLAIN GREPL()</p>
 <section id="clean-survey-data" class="level4">
 <h4 class="anchored" data-anchor-id="clean-survey-data">Clean Survey Data</h4>
-<p>TALK ABOUT HOW TO GO ABOUT CLEANING THE CHEMICAL COLS</p>
-<p>GLIMPSE OF NEWLY CLEANED TABLE –&gt; INSTEAD OF THIS FORMAT IT MUCH MORE NICELY?? (using KABLE/kablextra)</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(s_sur_ca_fl)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 6 × 12
-   Year State   Fruit Category Item  `Meas Type` Metric Domain Type  Name  Code 
-  &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;  &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;
-1  2023 CALIFO… STRA… "STRAWB… " PR… &lt;NA&gt;        " MEA… TOTAL  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt; 
-2  2023 CALIFO… STRA… "FRESH … " PR… &lt;NA&gt;        " MEA… TOTAL  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt; 
-3  2023 CALIFO… STRA… "PROCES… " PR… &lt;NA&gt;        " MEA… TOTAL  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt; 
-4  2023 FLORIDA STRA… "STRAWB… " PR… &lt;NA&gt;        " MEA… TOTAL  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt; 
-5  2023 FLORIDA STRA… "FRESH … " PR… &lt;NA&gt;        " MEA… TOTAL  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt; 
-6  2023 FLORIDA STRA… "PROCES… " PR… &lt;NA&gt;        " MEA… TOTAL  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt; 
-# ℹ 1 more variable: Value &lt;chr&gt;</code></pre>
-</div>
-</div>
-<p>–&gt; THEN WITHIN THE TWO THE TWO STATES OF INTEREST ARE FLORIDA AND CALIFORNIA SO FILTER THROIUGH THE NEW TABLES TO JUST CONSIDER THOSE TOO STATES</p>
+<p>As eventually I wanted to gain insight into the usage of chemicals in the production of strawberries, I further cleaned the <code>SURVEY</code> Data as the information within this <code>Program</code> provided the data regarding the type and usage of chemicals in the growing process. The original <code>SURVEY</code> Data consists of columns that have multiple data entries in each as well as columns that hold data that should be placed in a different column.</p>
+<p>The <code>grepl()</code> function is utilized within the code to recognize patterns within columns of data to shift the location of incorrectly placed data to the correct ones. To tackle the issue regarding multiple data entries in a single cell the <code>separate_wider_delim()</code> function is used to split the multiple entries into separate columns based on a chosen delimiter.</p>
+<p>First, the non chemical columns in the <code>SURVEY</code> data will be cleaned.</p>
+<p>Next, the chemical related columns of the <code>SURVEY</code> data is cleaned in a similar manner- using separate_wider_delim() to separate columns with multiple values and select() and gsub() to respectively remove unwanted columns and remove unwanted parentheses.</p>
+<p>The cleaned Strawberry <code>SURVEY</code> data is saved as a .csv for further analysis purposes. This file is found within the Github repository under the name survey_clean.csv</p>
+<p>Since further analysis will consider and compare the state of California and Florida I split the cleaned <code>SURVEY</code> data into two further data sets: one where the state of interest is California and one where it is Florida.</p>
 </section>
 <section id="clean-census-data" class="level4">
 <h4 class="anchored" data-anchor-id="clean-census-data">Clean Census Data</h4>
-<p>HOW USING SEPERATE DATA DELIMETER AND WHAT IS THE DELIMETER TO SPLIT DIFF VARIABLES INTO SEPERATE TABLES; use select to remove unwanted cols (for data analysis) –&gt; EXPLAIN GREPL()</p>
+<p>As I wanted to also gain insight into the connection between of sales, production, and net income for strawberries production within the two states, I further cleaned the <code>CENSUS</code> Data as the information within this <code>Program</code> provided the economic data needed to gain clarity on these topics. Like the <code>SURVEY</code> data, the original <code>CENSUS</code> Data also consists of columns that have multiple data entries as well as columns that hold data that should be placed in a different column.</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "INCOME, NET CASH FARM" "STRAWBERRIES"         </code></pre>
@@ -183,31 +124,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 "ORGANIC STATUS: (NOP USDA CERTIFIED)" </code></pre>
 </div>
 </div>
-<p>NOW JUST LOOK PARTICULARLY WITHIN THE INCOME DATA TABLE</p>
-<p>NOW FIX HOW THE MONEY VALUES ARE DEPICTED IN THE TABLE (MAKE THEM NUMERIC)</p>
-<p>SEPERATE NEWWLY CLEANED STRAWBERRY DATASET INTO CALIFORNIA AND FLORIDA AND THEN SEPERATE EACH INTO OPERATORS AND PRODUCERS SO JUST PRODUCERS CAN BE LOOKED INTO</p>
-<p>NOW LOOK PARTICULARLY IN THE STRAWBERRY TABLE TO LEARN ABOUT PRODUCTION AND SALES</p>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 6 × 5
-  State      Item                                  Metric         Value `CV (%)`
-  &lt;chr&gt;      &lt;chr&gt;                                 &lt;chr&gt;          &lt;chr&gt; &lt;chr&gt;   
-1 CALIFORNIA " ORGANIC - ACRES HARVESTED"           &lt;NA&gt;          4,228 45.7    
-2 CALIFORNIA " ORGANIC - SALES"                    " MEASURED IN… 311,… 46.0    
-3 CALIFORNIA " ORGANIC - SALES"                    " MEASURED IN… 1,41… 51.7    
-4 CALIFORNIA " FRESH MARKET - SALES"               " MEASURED IN… (D)   (D)     
-5 CALIFORNIA " FRESH MARKET - SALES"               " MEASURED IN… 1,40… 50.6    
-6 CALIFORNIA " PROCESSING - OPERATIONS WITH SALES"  &lt;NA&gt;          7     60.0    </code></pre>
-</div>
-</div>
+<p>Now looking just at the data set where the <code>Commodity</code> of interest is <code>INCOME</code>, the same process undertaken to clean the <code>SURVEY</code> data is repeated here for the <code>CENSUS</code> data through the use of the functions separate_wider_delim(), select(), and gsub(). Here separate_wider_delim() is used to separate and get rid of the leading “OF OPERATIONS -” and “OF PRODUCERS -” with “F” and then “-” as delimiters.</p>
+<p>The values in <code>FARM SALES</code> are provided as ranges between two values and to make data visualization easier I split the Range column into its <code>Lower</code> and <code>Upper</code> bounds. These ranges however had additional information indicating the units of interest ($ or ACRES) and so gsub() was used so that only numerical values were left. There were additionally two special cases where OR MORE and LESS THAN were used, so to ensure only numerical values were left I changed LESS THAN (Value) to go from 0 to the particular value by using gsub() to substitute out LESS THAN for “0-” and used separate_wider_delim to keep 0 in the <code>Lower</code> column and (Value) in the Upper bound column. A similar process was utilized for OR MORE but rather than 0 the <code>Upper</code> bound for that row was left as NA, as the cap for the Farm Sales value is unknown.</p>
+<p>The cleaned Strawberry <code>CENSUS</code> data where <code>Commodity</code> is <code>INCOME</code> is saved as a .csv for further analysis purposes. This file is found within the Github repository under the name census_inc_clean.csv</p>
+<p>Since further analysis will consider and compare the state of California and Florida I split the cleaned <code>CENSUS</code> data, where the <code>Commodity</code> is <code>INCOME</code> into two further data sets: one where the state of interest is California and one where it is Florida. Within each data set however, there is additionally a separation between <code>OPERATIONS</code> and <code>PRODUCERS</code> so each State specific data set will be further split into two new data sets so that there is an individual <code>OPERATIONS</code> and <code>PRODUCERS</code> for both states.</p>
+<p>Now looking at the data set where the <code>Commodity</code> of interest is <code>STRAWBERRIES</code>, the same process undertaken to clean the earlier <code>CENSUS</code> data is repeated here the use of the functions grepl() and select(). Here grepl() is used to move all the entries in the <code>Item</code> column that begin with “MEASURED” to the <code>Metric</code> column and all entries with “ORGANIC -” to the <code>Item</code> column from ’<code>Category</code>. This second shift leaves everything in Category to have only one value so it can be dropped from the cleaned final data.</p>
+<p>The cleaned Strawberry <code>CENSUS</code> data where <code>Commodity</code> is <code>STRAWBERRIES</code> is saved as a .csv for further analysis purposes. This file is found within the Github repository under the name census_str_clean.csv</p>
+<p>Since further analysis will consider and compare the state of California and Florida I split the cleaned <code>CENSUS</code> data, where the <code>Commodity</code> is <code>STRAWBERRIES</code> into two further data sets: one where the state of interest is California and one where it is Florida.</p>
 </section>
 </section>
 <section id="data-analysis" class="level3">
 <h3 class="anchored" data-anchor-id="data-analysis">Data Analysis</h3>
-<p>EXPLAIN WHAT I WILL BE LOOKING AT HERE –&gt; THE QUESTIONS THAT I WILL BE CONSIDERING</p>
+<p>Following the completion of the Data Cleaning portion of the project, I now focus on performing exploratory data analysis to uncover patterns and gain insights into potential trends and explanations that underlie the current production, growth, and sales system of strawberries. By looking into the use of chemicals in the growth of strawberries, insights can be gained regarding the impact of various chemicals on yield, quality, and overall productivity. This can help identify which chemicals are most effective and sustainable in strawberry cultivation, as well as how environmental or regulatory factors might be influencing their usage.</p>
+<p>Furthermore, examining how farm sales affect net income provides valuable context for understanding the financial health of strawberry producers. By identifying the farm sales ranges where producers begin to experience positive net income, we can uncover the thresholds at which farm operations become profitable. This information is vital for growers and stakeholders in planning and optimizing production and sales strategies.</p>
+<p>Additionally, understanding how much sales are made based on market type—whether organic, fresh, or processing— can reveal significant insights into market preferences, demand, and pricing dynamics. This information can help to guide producers to tailor their marketing and operational efforts more effectively. Analyzing this data can help to identify which market types are more lucrative and explore the potential for growth in emerging markets such as organic strawberries.</p>
 <section id="data-analysis---chemicals" class="level4">
 <h4 class="anchored" data-anchor-id="data-analysis---chemicals">Data Analysis - Chemicals</h4>
-<p>INVESTIGATE THE USE OF CHEMICALS IN CALIFORNIA AND FLORIDA (WHICH TYPE OF CHEMICAL IS MOST USED IN WHICH STATE) CHANGE THE TYPE OF PLOT USED FOR BOTH OF THESE OR AT LEAST MAKE THEM VISUALLY LOOK DIFFERENT THAT THE OTHER ONE</p>
+<p>An important area of focus in this analysis is the use of chemicals in strawberry cultivation. Chemicals such as pesticides, herbicides, and fungicides are commonly used to enhance yields and protect crops from pests and diseases. However, concerns about the environmental impact and potential health risks associated with these chemicals have sparked ongoing debates. By examining the trends in chemical usage, particularly in major strawberry-producing states like California and Florida, this section aims to understand the patterns and implications of chemical applications in strawberry farming. This insight is crucial for identifying sustainable practices that balance productivity with environmental and consumer health considerations.</p>
+<p>This data set provides insights into the four main classes of chemicals used (fungicides, herbicide, insecticide, other) as well as fertilizers and so I was interested in the particular breakdown of which class of chemicals was most used in each state and whether the main class of chemical used between the two differed. To visualize this comparison I created a 2 variable bar graph, using ggplot, to show the difference in counts of chemical and fertilizer uses for the four major classes of chemicals between California and Florida.</p>
 <div class="cell">
 <div class="cell-output cell-output-stderr">
 <pre><code>`summarise()` has grouped output by 'Domain'. You can override using the
@@ -218,172 +152,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="MA415_midterm_proj_files/figure-html/create%20plot%20to%20investigate%20type%20of%20chemical%20use-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="MA415_midterm_proj_files/figure-html/create%20plot%20to%20investigate%20chemical%20class%20use-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>MOST COMMONLY USED CHEMICALS</p>
-<p>DO THE CHEMICAL DATA ANALYSIS –&gt; FIGURE OUT HOW TO PICK THE THREE AND CONTRAST THEIR USE –&gt; for a roow select the category and item that is associated with a speciifc chemical (to see how it is used) –&gt; find the top twenty and see which three are top used between the three?</p>
+<p>Looking at the produced bar graph, it can be seen how California seems to have a higher reliance on chemicals compared to Florida, as for all chemical types other than herbicides California has a higher count. While fungicides are the most commonly used chemical in Florida, California’s most commonly used chemical type is insecticides but it too often uses fungicides- even more than Florida. This discrepancy in the usage amount and type of chemical class used can be due to the fact that California may face greater pest and disease pressures, whereas Florida may focus on different environmental or farming practices that are less reliant on chemicals even when faced with such pressures. These differences in chemical usage could have important implications for sustainability and environmental impact, highlighting the need for tailored strategies in each state to optimize agricultural practices and manage pests and diseases effectively.</p>
+<p>Now that more broad insight into the differences between the classes of chemicals between the two states have been found, I am interested in seeing if there are any specific chemicals that are commonly used in both California and Florida and how their usage amounts differ between each other as well as over the years. To help satisfy this curiosity I created a table to visualize the top 10 chemicals used in each state respectively based in the amount used measured in pounds. By filtering each data set based on the values measured in pounds and summing up this measurement for each chemical name, a running total of the total usage of a particular chemical could be found.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first make the value col numerical</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>s_sur_ca<span class="sc">$</span>Value <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">gsub</span>(<span class="st">","</span>, <span class="st">""</span>, s_sur_ca<span class="sc">$</span>Value))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: NAs introduced by coercion</code></pre>
+<pre><code>Warning: NAs introduced by coercion
+Warning: NAs introduced by coercion</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>s_sur_fl<span class="sc">$</span>Value <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">gsub</span>(<span class="st">","</span>, <span class="st">""</span>, s_sur_fl<span class="sc">$</span>Value))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: NAs introduced by coercion</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate total usage for California (only "LB" measurements)</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>tot_use_lb_ca <span class="ot">&lt;-</span> s_sur_ca <span class="sc">%&gt;%</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Metric <span class="sc">==</span> <span class="st">" MEASURED IN LB"</span> <span class="sc">&amp;</span> Domain <span class="sc">!=</span> <span class="st">"TOTAL)"</span> <span class="sc">&amp;</span> Domain <span class="sc">!=</span> <span class="st">"FERTILIZER"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Name) <span class="sc">%&gt;%</span></span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="st">`</span><span class="at">Total Usage (LB)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">sum</span>(Value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(<span class="st">`</span><span class="at">Total Usage (LB)</span><span class="st">`</span>))</span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate total usage for Florida (only "LB" measurements)</span></span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>tot_use_lb_fl <span class="ot">&lt;-</span> s_sur_fl <span class="sc">%&gt;%</span></span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Metric <span class="sc">==</span> <span class="st">" MEASURED IN LB"</span> <span class="sc">&amp;</span> Domain <span class="sc">!=</span> <span class="st">"TOTAL)"</span> <span class="sc">&amp;</span> Domain <span class="sc">!=</span> <span class="st">"FERTILIZER"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Name) <span class="sc">%&gt;%</span></span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="st">`</span><span class="at">Total Usage (LB)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">sum</span>(Value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(<span class="st">`</span><span class="at">Total Usage (LB)</span><span class="st">`</span>))</span>
-<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract the top 5 chemicals for each state</span></span>
-<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>top_chem_ca <span class="ot">&lt;-</span> tot_use_lb_ca <span class="sc">|&gt;</span> <span class="fu">slice</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">11</span>)</span>
-<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>top_chem_fl <span class="ot">&lt;-</span> tot_use_lb_fl <span class="sc">|&gt;</span> <span class="fu">slice</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">11</span>)</span>
-<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>top_chem_ca <span class="sc">|&gt;</span></span>
-<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kbl</span>(<span class="at">caption =</span> <span class="st">"Top 10 Most Used Chemicals in California"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> F, <span class="at">html_font =</span> <span class="st">"Cambria"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
-<caption>Top 10 Most Used Chemicals in California</caption>
-<thead>
-<tr class="header">
-<th style="text-align: left;" data-quarto-table-cell-role="th">Name</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Total Usage (LB)</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">CHLOROPICRIN</td>
-<td style="text-align: right;">16991600</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">DICHLOROPROPENE</td>
-<td style="text-align: right;">2491200</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">SULFUR</td>
-<td style="text-align: right;">1849300</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">METAM-POTASSIUM</td>
-<td style="text-align: right;">1040400</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">CAPTAN</td>
-<td style="text-align: right;">856700</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">THIRAM</td>
-<td style="text-align: right;">365800</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">PENDIMETHALIN</td>
-<td style="text-align: right;">82200</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">MALATHION</td>
-<td style="text-align: right;">48500</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">BIFENAZATE</td>
-<td style="text-align: right;">45400</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">CYPRODINIL</td>
-<td style="text-align: right;">41600</td>
-</tr>
-</tbody>
-</table>
-
-
-</div>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>top_chem_fl <span class="sc">|&gt;</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kbl</span>(<span class="at">caption =</span> <span class="st">"Top 10 Most Used Chemicals in Florida"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> F, <span class="at">html_font =</span> <span class="st">"Cambria"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
-<caption>Top 10 Most Used Chemicals in Florida</caption>
-<thead>
-<tr class="header">
-<th style="text-align: left;" data-quarto-table-cell-role="th">Name</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Total Usage (LB)</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">CAPTAN</td>
-<td style="text-align: right;">279100</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">THIRAM</td>
-<td style="text-align: right;">254500</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">CYPRODINIL</td>
-<td style="text-align: right;">15200</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">FLUDIOXONIL</td>
-<td style="text-align: right;">10600</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">NOVALURON</td>
-<td style="text-align: right;">2600</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">SPINETORAM</td>
-<td style="text-align: right;">700</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">ACETAMIPRID</td>
-<td style="text-align: right;">500</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">CHLORANTRANILIPROLE</td>
-<td style="text-align: right;">400</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">THIAMETHOXAM</td>
-<td style="text-align: right;">400</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">ABAMECTIN</td>
-<td style="text-align: right;">100</td>
-</tr>
-</tbody>
-</table>
-
-
-</div>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>top_chem_ca<span class="sc">$</span>State <span class="ot">&lt;-</span> <span class="st">"California"</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>top_chem_fl<span class="sc">$</span>State <span class="ot">&lt;-</span> <span class="st">"Florida"</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Combine both tables into one</span></span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(top_chem_fl) <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="fu">colnames</span>(top_chem_fl), <span class="st">"_fl"</span>, <span class="at">sep =</span> <span class="st">""</span>)</span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>top_chem <span class="ot">&lt;-</span> <span class="fu">cbind</span>(top_chem_ca, top_chem_fl)</span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>top_chem_table <span class="ot">&lt;-</span> top_chem <span class="sc">|&gt;</span> <span class="fu">select</span>(Name, <span class="st">`</span><span class="at">Total Usage (LB)</span><span class="st">`</span>, Name_fl, <span class="st">`</span><span class="at">Total Usage (LB)_fl</span><span class="st">`</span>)</span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(top_chem_table) <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">"_fl"</span>, <span class="st">""</span>, <span class="fu">colnames</span>(top_chem_table))</span>
-<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the combined table using kable</span></span>
-<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>top_chem_table <span class="sc">|&gt;</span></span>
-<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kbl</span>(<span class="at">caption =</span> <span class="st">"Top 10 Most Used Chemicals in California and Florida"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> F, <span class="at">html_font =</span> <span class="st">"Cambria"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_header_above</span>(<span class="fu">c</span>(<span class="st">"California"</span> <span class="ot">=</span> <span class="dv">2</span>, <span class="st">"Florida"</span> <span class="ot">=</span> <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
 <caption>Top 10 Most Used Chemicals in California and Florida</caption>
@@ -476,63 +256,29 @@ Florida
 
 </div>
 </div>
-<p>BASED ON THE ABOVE TABLE IT CAN BE SEEN THAT THE THREE MOST USED CHEMICALS COMMON TO BOTH CALIFORNIA AND FLORIDA ARE CAPTAN, THIRAM, AND CYPRODINIL ALL OF WHICH ARE TYPE FUNGICIDE PERHAPS IMPLYING THAT COLLECTIVELY FUNGICIDE ARE THE LARGEST THREAT TO STRAWBERRY GROIWONG</p>
-<p>LOOK AT HOW THE USAGE OF THESE THREE CHEMICALS CHANGE PER YEAR FOR CALIFORNIA AND FLORIDA</p>
+<p>Based on the table above it can be seen that the three most used chemicals common to both California and Florida (based on their total usage in pounds) are Captan, Thiram, and Cyprodinil- all of which fall under the fungicide class of chemicals. According to PubMed both Captan and Thiram as chemicals exhibit moderate acute toxicity if encountered via oral or inhalation exposure (Cat II and III), while Cyprodinil poses relatively little toxicity risk (Cat III &amp; I4). The fact that these chemicals which are some of the most commonly used in both states do to some extent post toxicity risk mY lead consumers to be more wary about purchasing such products if they are more aware about it in the future. These three chemicals were the top three most used in Florida which follows what was seen in the bar graph above where of the classes of chemicals Florida had the most number of fungicides. The largest use of the fungicides in Florida may imply that in this state Fungi are the largest threat the strawberry growing compared to insects or herbs. The top two chemicals used in California are under the the other class of chemicals, which I found interesting as with the high number of fungicides and insecticides seen in the bar graph to be used in California I was expecting their to be both classes in the top 5 most used chemicals.</p>
+<p>After finding the three chemicals that were most commonly used in both states, I was interested in uncovering by how much that total usage of each of these chemicals changed over the years for California and Florida. To visualize this, I create a line plot, using ggplot, that plotted the total usage trajectory of each of the three top chemicals over the years 2021 and 2023 for the two states.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>top_3chem_ca <span class="ot">&lt;-</span> top_chem_ca <span class="sc">|&gt;</span> <span class="fu">filter</span>(Name <span class="sc">==</span> <span class="st">"CAPTAN "</span> <span class="sc">|</span> Name <span class="sc">==</span> <span class="st">"THIRAM "</span> <span class="sc">|</span> Name <span class="sc">==</span><span class="st">"CYPRODINIL "</span>)</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>top_3chem_fl <span class="ot">&lt;-</span> top_chem_fl <span class="sc">|&gt;</span> <span class="fu">filter</span>(Name_fl <span class="sc">==</span> <span class="st">"CAPTAN "</span> <span class="sc">|</span> Name_fl <span class="sc">==</span> <span class="st">"THIRAM "</span> <span class="sc">|</span> Name_fl <span class="sc">==</span><span class="st">"CYPRODINIL "</span>)</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate yearly trends for the top 5 chemicals in California</span></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>yr_chem_ca <span class="ot">&lt;-</span> s_sur_ca <span class="sc">%&gt;%</span></span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Name <span class="sc">%in%</span> top_3chem_ca<span class="sc">$</span>Name, Metric <span class="sc">==</span> <span class="st">" MEASURED IN LB"</span> <span class="sc">&amp;</span> Domain <span class="sc">!=</span> <span class="st">"TOTAL)"</span> <span class="sc">&amp;</span> Domain <span class="sc">!=</span> <span class="st">"FERTILIZER"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year, Name) <span class="sc">%&gt;%</span></span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">yearly_usage =</span> <span class="fu">sum</span>(Value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>`summarise()` has grouped output by 'Year'. You can override using the
+`.groups` argument.
+`summarise()` has grouped output by 'Year'. You can override using the
 `.groups` argument.</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate yearly trends for the top 5 chemicals in Florida</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>yr_chem_fl <span class="ot">&lt;-</span> s_sur_fl <span class="sc">%&gt;%</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Name <span class="sc">%in%</span> top_3chem_fl<span class="sc">$</span>Name_fl, Metric <span class="sc">==</span> <span class="st">" MEASURED IN LB"</span> <span class="sc">&amp;</span> Domain <span class="sc">!=</span> <span class="st">"TOTAL)"</span> <span class="sc">&amp;</span> Domain <span class="sc">!=</span> <span class="st">"FERTILIZER"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Year, Name) <span class="sc">%&gt;%</span></span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">yearly_usage =</span> <span class="fu">sum</span>(Value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>`summarise()` has grouped output by 'Year'. You can override using the
-`.groups` argument.</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create line plots for California and Florida</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>yr_chem_ca_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(yr_chem_ca, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> yearly_usage<span class="sc">*</span><span class="fl">1e-3</span>, <span class="at">color =</span> Name, <span class="at">group =</span> Name)) <span class="sc">+</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span>                            </span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span>                           </span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Yearly Usage of Chemicals in California"</span>,</span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Year"</span>,</span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Yearly Usage (kip)"</span>,</span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">"Chemical Type"</span>) <span class="sc">+</span></span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"red"</span>, <span class="st">"blue"</span>, <span class="st">"green"</span>))<span class="sc">+</span> <span class="co"># Customize colors for each chemical</span></span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">2021</span>, <span class="dv">2023</span>))</span>
-<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>yr_chem_fl_plot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(yr_chem_fl, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> yearly_usage<span class="sc">*</span><span class="fl">1e-3</span>, <span class="at">color =</span> Name, <span class="at">group =</span> Name)) <span class="sc">+</span></span>
-<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span>                            </span>
-<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span>                           </span>
-<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Yearly Usage of Chemicals in Florida"</span>,</span>
-<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Year"</span>,</span>
-<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Yearly Usage (kip)"</span>,</span>
-<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">"Chemical Type"</span>) <span class="sc">+</span></span>
-<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"red"</span>, <span class="st">"blue"</span>, <span class="st">"green"</span>))<span class="sc">+</span> <span class="co"># Customize colors for each chemical</span></span>
-<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">2021</span>, <span class="dv">2023</span>))</span>
-<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a><span class="fu">grid.arrange</span>(yr_chem_ca_plot, yr_chem_fl_plot, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="MA415_midterm_proj_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="MA415_midterm_proj_files/figure-html/create%20a%20plot%20to%20visualize%20how%20the%20top%203%20shared%20chemical%20usage%20changed%20over%20time%20in%20both%20states-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
+<p>From the two line graphs produced above, it can be seen that for both California and Florida the usage of Captan and Cyprodinil have slowly increased over the years while the action of the chemical Thiram changes between the states. In California, the yearly usage of the chemical Thiram also goes up (similar to the other two chemicals), but in Florida the yearly usage of the same chemical drops instead. In California, the upward trend in Thiram usage could be driven by rising pest challenges or changing environmental factors that make this specific chemical more necessary. In contrast, the declining use of Thiram in Florida may suggest a shift in pest management strategies, possibly due to changes in pest pressure or the adoption of alternative chemicals to counter the particular fungi that this chemical in particular addresses. This might be the case rather than a more overarching shift away from fungicides as the other two fungicides (Captan and Cyprodinil) are still being utilized as the years progress.</p>
 </section>
 <section id="data-analysis---income" class="level4">
 <h4 class="anchored" data-anchor-id="data-analysis---income">Data Analysis - Income</h4>
-<p>INCOME ANALYSIS - FARM SALES LOOK AT NET INCOME BASED OFF FARM SALES FROM PRODUCERS IN CA VS FL</p>
+<p>An additionally important area of focus in this analysis is the economic trends that follow strawberry production within the two states. Understanding how different levels of sales contribute to profitability is crucial for evaluating the financial sustainability of such farms. Identifying the sale thresholds at which farms begin to experience positive net income, can help uncover key insights that can optimize production and sales strategies. Additionally, examining income in relation to market types—whether organic, fresh, or processing—can provide valuable context for understanding market preferences. This helps identify which market types are more lucrative, allowing producers to better target their efforts and capitalize on high-demand areas.</p>
+<p>The data provided within the <code>CENSUS</code> portion of the data set provides insight into the correlation between Farm Sales and Net Income and I was interested in seeing the relationship between the two variables, particularly in regards to at which range of farm sales does the farm being to produce a positive net income. To visualize this I created a table that shows the net income of each state for a give range of Farm Sales in dollars.</p>
 <div class="cell">
 <div class="cell-output-display">
 <table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
@@ -661,28 +407,19 @@ Florida
 
 </div>
 </div>
-<p>FLORIDA STARTS MAKING A PROFITABLE INCOME AT AN EARLIER FARM SALE RANGE COMPARED TO CALIFORNIA –&gt; A POSITIVE NET INCOME STARTS AS FARM SALES ARE BETWEEN 50000 TO 99999 WHILE CALIFORNIA ONLY STARTS SEEING A POSITIVE NET INCOME WHEN FARM SALES ARE BETWEEN 250000 TO 499999</p>
-<p>INSIGHTS: 1. Difference in Profitability Threshold: Florida starts making a profitable income at a much lower farm sales range (between $50,000 to $99,999).</p>
-<p>In contrast, California only begins seeing a positive net income when farm sales are between $250,000 to $499,999.</p>
-<p>This indicates that, on average, Florida farmers can start turning a profit at lower levels of farm sales compared to California farmers. Florida may have lower operational or fixed costs, better market conditions, or more favorable climate factors, allowing farms to become profitable at a smaller scale. California, on the other hand, may have higher costs or more competition, meaning it requires higher sales to reach profitability.</p>
-<ol start="2" type="1">
-<li>Cost Structures: The fact that Florida becomes profitable at lower sales could also point to differences in cost structures between the two states.</li>
-</ol>
-<p>Florida farmers might have lower labor, land, or production costs, which allows them to become profitable at a lower sales threshold.</p>
-<p>California, with its larger and more established agricultural industry, might experience higher input costs (labor, land, water, regulations, etc.), meaning farms need to sell more to cover these expenses and generate a profit.</p>
-<p>-ORGANIC STRAW PROCESSING VS FRESH SALES PRICES?</p>
-<p>FLORIDA HAS NO PROCESSING DATA AND CALIFORNIA ONLY HAS HIDDEN VALUES FOR FRESH MARKET AND PROCESSING SALES IN $ SO WILL COMPARE ORGANIC + FRESH MARKET SALES MEASURE BY CWT (WEIGHT/VOLUME) BETWEEN THE TWO STATES</p>
-<p>CALIFORNIA HAS INFO FOR ALL THREE WHEN SALES ARE MEASURED BY CWT SO WILL OCMPARE TO SEE WHICH METHOD PRODUCES THE MOST SALES</p>
+<p>Looking at the table above it can be seen how Florida begins to make a profitable (net positive) income at an earlier Farm Sale range when compared to California. For Florida, a positive net income starts as Farm Sales are between $50,000 and $99,999 while California only starts seeing a positive net income when Farm Sales are significantly higher between $250,000 and $499,999. This disparity suggests that Florida farmers can reach profitability at smaller scales, likely due to factors such as lower operational costs or reduced land and labor expenses. Its agricultural industry may also face less competition, allowing producers to become profitable more easily. On the other hand, California’s higher costs, driven by factors like labor, land, environmental regulations, and a larger, more competitive agricultural industry, demand higher sales to offset these expenses and reach profitability. Additionally, California’s farmers may deal with larger production volumes or more complex farming practices that contribute to higher operational costs. This difference in profitability thresholds also highlights the impact of scale economies in California, where larger-scale operations are needed to cover costs and achieve profit.</p>
+<p>In addition to looking at the affect of Farm Sales on Net Income I was also interested in looking to see how sales in general were affected based on the market type used- whether it is organic, fresh market, or processing. However, the data in the given data set is very limited and missing some values, so the full scope of my question could not be considered but parts of it are able to. California has information for all three market types (organic, fresh market, and processing) when sales are <code>MEASURED BY CWT</code>, so I am interested to compare and see which market type produces the most sales for strawberries grown in California. I visualized this comparison through the generation of a bar graph, using ggplot, the compares the sale methods by weight.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="MA415_midterm_proj_files/figure-html/create%20figure%20to%20compare%20organis,%20fresh%20market,%20and%20processing%20sales%20in%20california-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="MA415_midterm_proj_files/figure-html/create%20figure%20to%20compare%20organic,%20fresh%20market,%20and%20processing%20sales%20in%20california-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>IN CALIFORNIA A HUGE MAJORITY OF THE SALES COME FROM FRESH MARKET AND ORGANIC COMPARED TO PROCESSING –&lt; CONSUMERS CARE MORE AND ARE MUCH MORE WILLING TO BY FRESH AND ORGANISH FRUITS COMPARED TO PROCESSED ONES</p>
+<p>The bar graph highlights that in California, the vast majority of strawberry sales come from the fresh market and organic sectors rather than processing, suggesting a strong consumer preference for fresh and organic produce. The larger pull by the fresh and organic markets to consumers may be to a perception that fresher produce is better quality and more beneficial to those who eat it as well as the environment. This means that it would be import for California farmers to prioritize these markets, as they offer higher profitability (sales) compared to processed strawberries, that could come in the form of jams or jellies, meaning that more land, space, and workforce could be allocated for these sectors.</p>
+<p>In the given data set however, Florida has no processing data and California only has hidden values for the Fresh Market and Processing sales in $, so instead I will compare organic and fresh market sales measured by weight/volume (in CWT) between the two states. To make this comparison I will generate a 2 variable bar graph, using ggplot, that compares the Value of product sold, in weight, for each market type between the two states.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -692,7 +429,12 @@ Florida
 </div>
 </div>
 </div>
+<p>From the above bar graph it can be seen that for a given state the weight of produce sold is either exactly the same or very similar regardless of whether the sale type was in Fresh Market or Organic. However, comparing the two states together, it can be seen that by volume in both sale types California sells a significant amount more of strawberries, around 21 times more, than Florida. This stark contrast points to California’s larger agricultural scale, more extensive production capacity, and perhaps greater market reach allowing the state to sell much more of its goods. California’s dominance in strawberry sales likely reflects its established infrastructure, larger growing areas, and longer growing seasons, while Florida, though a significant producer (the second largest of all the states) seems to operate on a comparatively smaller scale.</p>
 </section>
+</section>
+<section id="conclusion" class="level3">
+<h3 class="anchored" data-anchor-id="conclusion">Conclusion</h3>
+<p>In conclusion, the data cleaning and exploratory data analysis (EDA) processes have provided valuable insights into the complexities of strawberry production, sales, and chemical usage across California and Florida. These preliminary analyses have allowed for the identification of key patterns, such as the differing profitability thresholds between the two states and the significant difference in the volume of strawberries sold. However, this is just the beginning as the analysis I provided so far in this document has only scratched the surface of all the information and comparisons that could be generated through the original data set- meaning that are many more areas that need further exploration. Further analysis into this data set as well as creating others through USDA that may focus even more heavily on, for example, the economic situation of strawberry production, could help optimize farming strategies and contribute further to more sustainable practices. Continuing analysis through this cleaned data set can help uncover more valuable insights for strawberry producers and stakeholders in the agricultural industry.</p>
 </section>
 </section>
 

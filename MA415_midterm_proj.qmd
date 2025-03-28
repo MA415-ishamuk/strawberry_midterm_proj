@@ -303,7 +303,7 @@ The cleaned Strawberry `CENSUS` data where `Commodity` is `INCOME` is saved as a
 write.csv(s_cen_ca_fl_inc, file = "census_inc_clean.csv", row.names = T)
 ```
 
-Since further analysis will consider and compare the state of California and Florida I split the cleaned `CENSUS` data, where the `Commodity` is `INCOME` into two further data sets: one where the state of interest is California and one where it is Florida. Within each data set however, there is additionally a separation between `OPERATIONS` and `PRODUCERS` so each State specific data set will be further split into two new data sets so that there is an individual `OPERATIONS` and `PRODUCERS` for both states. 
+Since further analysis will consider and compare the state of California and Florida I split the cleaned `CENSUS` data, where the `Commodity` is `INCOME` into two further data sets: one where the state of interest is California and one where it is Florida. Within each data set however, there is additionally a separation between `OPERATIONS` and `PRODUCERS` so each State specific data set will be further split into two new data sets so that there is an individual `OPERATIONS` and `PRODUCERS` for both states.
 
 ```{r}
 #| label: split cleaned census data (commodity = income) by both state and type
@@ -323,7 +323,7 @@ s_cen_fl_op <- s_cen_fl |> filter(Type == "OPERATIONS ")
 s_cen_fl_pr <- s_cen_fl |> filter(Type == "PRODUCERS ")
 ```
 
-Now looking at the data set where the `Commodity` of interest is `STRAWBERRIES`, the same process undertaken to clean the earlier `CENSUS` data is repeated here the use of the functions grepl() and select(). Here grepl() is used to move all the entries in the `Item` column that begin with "MEASURED" to the `Metric` column and all entries with "ORGANIC -" to the `Item` column from '`Category`. This second shift leaves everything in Category to have only one value so it can be dropped from the cleaned final data. 
+Now looking at the data set where the `Commodity` of interest is `STRAWBERRIES`, the same process undertaken to clean the earlier `CENSUS` data is repeated here the use of the functions grepl() and select(). Here grepl() is used to move all the entries in the `Item` column that begin with "MEASURED" to the `Metric` column and all entries with "ORGANIC -" to the `Item` column from '`Category`. This second shift leaves everything in Category to have only one value so it can be dropped from the cleaned final data.
 
 ```{r}
 #| label: clean strawberry census data (commodity = strawberry)
@@ -338,6 +338,7 @@ s_cen_ca_fl_str$Item[grepl("ORGANIC -", s_cen_ca_fl_str$Category)] <- s_cen_ca_f
 # the Category column now only has one value so it can be removed from the cleaned data
 s_cen_ca_fl_str <- s_cen_ca_fl_str |> select(-Category)
 ```
+
 The cleaned Strawberry `CENSUS` data where `Commodity` is `STRAWBERRIES` is saved as a .csv for further analysis purposes. This file is found within the Github repository under the name census_str_clean.csv
 
 ```{r}
@@ -347,7 +348,7 @@ The cleaned Strawberry `CENSUS` data where `Commodity` is `STRAWBERRIES` is save
 write.csv(s_cen_ca_fl_str, file = "census_str_clean.csv", row.names = T)
 ```
 
-Since further analysis will consider and compare the state of California and Florida I split the cleaned `CENSUS` data, where the `Commodity` is `STRAWBERRIES` into two further data sets: one where the state of interest is California and one where it is Florida. 
+Since further analysis will consider and compare the state of California and Florida I split the cleaned `CENSUS` data, where the `Commodity` is `STRAWBERRIES` into two further data sets: one where the state of interest is California and one where it is Florida.
 
 ```{r}
 #| label: split cleaned census data (commodity = strawberry) by state
@@ -362,35 +363,47 @@ s_cen_fl_str <- s_cen_ca_fl_str |> filter(State == "FLORIDA")
 
 ### Data Analysis
 
-EXPLAIN WHAT I WILL BE LOOKING AT HERE --\> THE QUESTIONS THAT I WILL BE CONSIDERING
+Following the completion of the Data Cleaning portion of the project, I now focus on performing exploratory data analysis to uncover patterns and gain insights into potential trends and explanations that underlie the current production, growth, and sales system of strawberries. By looking into the use of chemicals in the growth of strawberries, insights can be gained regarding the impact of various chemicals on yield, quality, and overall productivity. This can help identify which chemicals are most effective and sustainable in strawberry cultivation, as well as how environmental or regulatory factors might be influencing their usage.
+
+Furthermore, examining how farm sales affect net income provides valuable context for understanding the financial health of strawberry producers. By identifying the farm sales ranges where producers begin to experience positive net income, we can uncover the thresholds at which farm operations become profitable. This information is vital for growers and stakeholders in planning and optimizing production and sales strategies.
+
+Additionally, understanding how much sales are made based on market type—whether organic, fresh, or processing— can reveal significant insights into market preferences, demand, and pricing dynamics. This information can help to guide producers to tailor their marketing and operational efforts more effectively. Analyzing this data can help to identify which market types are more lucrative and explore the potential for growth in emerging markets such as organic strawberries.
 
 #### Data Analysis - Chemicals
 
-INVESTIGATE THE USE OF CHEMICALS IN CALIFORNIA AND FLORIDA (WHICH TYPE OF CHEMICAL IS MOST USED IN WHICH STATE) CHANGE THE TYPE OF PLOT USED FOR BOTH OF THESE OR AT LEAST MAKE THEM VISUALLY LOOK DIFFERENT THAT THE OTHER ONE
+An important area of focus in this analysis is the use of chemicals in strawberry cultivation. Chemicals such as pesticides, herbicides, and fungicides are commonly used to enhance yields and protect crops from pests and diseases. However, concerns about the environmental impact and potential health risks associated with these chemicals have sparked ongoing debates. By examining the trends in chemical usage, particularly in major strawberry-producing states like California and Florida, this section aims to understand the patterns and implications of chemical applications in strawberry farming. This insight is crucial for identifying sustainable practices that balance productivity with environmental and consumer health considerations.
+
+This data set provides insights into the four main classes of chemicals used (fungicides, herbicide, insecticide, other) as well as fertilizers and so I was interested in the particular breakdown of which class of chemicals was most used in each state and whether the main class of chemical used between the two differed. To visualize this comparison I created a 2 variable bar graph, using ggplot, to show the difference in counts of chemical and fertilizer uses for the four major classes of chemicals between California and Florida.
 
 ```{r}
-#| label: create plot to investigate type of chemical use 
+#| label: create plot to investigate chemical class use 
 #| echo: false
-#MAKE THIS AND THE NEXT PLOT A TWO VARIABLE BAR PLOT
+
+# calculate a count of each type of chemical class and fertilizer from the California survey data
 ca_chem_sum <- s_sur_ca %>%
   group_by(Domain, Type) %>%
   summarize(count = n()) %>%
   arrange(desc(count))
 
-#MAKE A TABLE THAT SHOWS THESE TWO????
-
+# to more easily make the 2 variable plot later add a column to ca_chem_sum to show the associated state is California
 ca_chem_sum$State <- c("CALIFORNIA")
 
+
+# calculate a count of each type of chemical class and fertilizer from the Florida survey data
 fl_chem_sum <- s_sur_fl %>%
   group_by(Domain, Type) %>%
   summarize(count = n()) %>%
   arrange(desc(count))
 
+# to more easily make the 2 variable plot later add a column to ca_chem_sum to show the associated state is Florida
 fl_chem_sum$State <- c("FLORIDA")
 
+# bind together the two data sets (by row) to be used as the base data frame for ggplot2 to plot from
 ca_fl_chem_sum <- rbind(ca_chem_sum, fl_chem_sum) 
-#REPLACE NA WITH FERTILIZER!
+ca_fl_chem_sum <- ca_fl_chem_sum %>%
+  mutate(Type = ifelse(is.na(Type), "FERTILIZER", Type))
 
+# create a 2 variable bar graph using ggplot to show the distribution of chemical class between the two states
 ggplot(ca_fl_chem_sum, aes(fill=State, y=count, x=Type)) +
   geom_bar(position='dodge', stat='identity') +
   geom_text(aes(label = count), position = position_dodge(width = 0.9), vjust = -0.5) +
@@ -399,71 +412,81 @@ ggplot(ca_fl_chem_sum, aes(fill=State, y=count, x=Type)) +
   ylab('Count') +
   scale_fill_manual('State', values=c('seagreen4','slategray2'))
 ```
+Looking at the produced bar graph, it can be seen how California seems to have a higher reliance on chemicals compared to Florida, as for all chemical types other than herbicides California has a higher count. While fungicides are the most commonly used chemical in Florida, California's most commonly used chemical type is insecticides but it too often uses fungicides- even more than Florida. This discrepancy in the usage amount and type of chemical class used can be due to the fact that California may face greater pest and disease pressures, whereas Florida may focus on different environmental or farming practices that are less reliant on chemicals even when faced with such pressures. These differences in chemical usage could have important implications for sustainability and environmental impact, highlighting the need for tailored strategies in each state to optimize agricultural practices and manage pests and diseases effectively.
 
-MOST COMMONLY USED CHEMICALS
-
-DO THE CHEMICAL DATA ANALYSIS --\> FIGURE OUT HOW TO PICK THE THREE AND CONTRAST THEIR USE --\> for a roow select the category and item that is associated with a speciifc chemical (to see how it is used) --\> find the top twenty and see which three are top used between the three?
+Now that more broad insight into the differences between the classes of chemicals between the two states have been found, I am interested in seeing if there are any specific chemicals that are commonly used in both California and Florida and how their usage amounts differ between each other as well as over the years. To help satisfy this curiosity I created a table to visualize the top 10 chemicals used in each state respectively based in the amount used measured in pounds. By filtering each data set based on the values measured in pounds and summing up this measurement for each chemical name, a running total of the total usage of a particular chemical could be found.
 
 ```{r}
-# first make the value col numerical
+#| label: create a table to visualize the top 10 chemcials used in both states 
+#| echo: false
+
+# first make the value column numerical from character by getting rid of the comma and using as.numeric()
 s_sur_ca$Value <- as.numeric(gsub(",", "", s_sur_ca$Value))
 s_sur_fl$Value <- as.numeric(gsub(",", "", s_sur_fl$Value))
-# Calculate total usage for California (only "LB" measurements)
 
+# calculate the total usage in pounds for each chemical in California
 tot_use_lb_ca <- s_sur_ca %>%
   filter(Metric == " MEASURED IN LB" & Domain != "TOTAL)" & Domain != "FERTILIZER") %>%
   group_by(Name) %>%
   summarise(`Total Usage (LB)` = sum(Value, na.rm = TRUE)) %>%
   arrange(desc(`Total Usage (LB)`))
 
-# Calculate total usage for Florida (only "LB" measurements)
+# calculate the total usage in pounds for each chemical in Florida
 tot_use_lb_fl <- s_sur_fl %>%
   filter(Metric == " MEASURED IN LB" & Domain != "TOTAL)" & Domain != "FERTILIZER") %>%
   group_by(Name) %>%
   summarise(`Total Usage (LB)` = sum(Value, na.rm = TRUE)) %>%
   arrange(desc(`Total Usage (LB)`))
 
-# Extract the top 5 chemicals for each state
+# extract the top 10 chemicals for each state by total usage (started from 2 as first row was TOTAL)
 top_chem_ca <- tot_use_lb_ca |> slice(2:11)
 top_chem_fl <- tot_use_lb_fl |> slice(2:11)
 
+# to make a 2 variable table easier to generate add a column to each data set to explain which state it came from
 top_chem_ca$State <- "California"
 top_chem_fl$State <- "Florida"
 
-# Combine both tables into one
+# combine both tables into one using column bind
 colnames(top_chem_fl) <- paste(colnames(top_chem_fl), "_fl", sep = "")
 top_chem <- cbind(top_chem_ca, top_chem_fl)
+
+# select the columns of interest for the final table - use the added _fl to differentiate variables of the same name     # between the two states
 top_chem_table <- top_chem |> select(Name, `Total Usage (LB)`, Name_fl, `Total Usage (LB)_fl`)
 colnames(top_chem_table) <- gsub("_fl", "", colnames(top_chem_table))
 
-# Display the combined table using kable
+# display the combined table showcasing the top 10 chemicals per state using kable
 top_chem_table |>
   kbl(caption = "Top 10 Most Used Chemicals in California and Florida") |>
   kable_classic(full_width = F, html_font = "Cambria") |> 
   add_header_above(c("California" = 2, "Florida" = 2))
 ```
 
-BASED ON THE ABOVE TABLE IT CAN BE SEEN THAT THE THREE MOST USED CHEMICALS COMMON TO BOTH CALIFORNIA AND FLORIDA ARE CAPTAN, THIRAM, AND CYPRODINIL ALL OF WHICH ARE TYPE FUNGICIDE PERHAPS IMPLYING THAT COLLECTIVELY FUNGICIDE ARE THE LARGEST THREAT TO STRAWBERRY GROIWONG
+Based on the table above it can be seen that the three most used chemicals common to both California and Florida (based on their total usage in pounds) are Captan, Thiram, and Cyprodinil- all of which fall under the fungicide class of chemicals. According to PubMed both Captan and Thiram as chemicals exhibit moderate acute toxicity if encountered via oral or inhalation exposure (Cat II and III), while Cyprodinil poses relatively little toxicity risk (Cat III & I4). The fact that these chemicals which are some of the most commonly used in both states do to some extent post toxicity risk mY lead consumers to be more wary about purchasing such products if they are more aware about it in the future. These three chemicals were the top three most used in Florida which follows what was seen in the bar graph above where of the classes of chemicals Florida had the most number of fungicides. The largest use of the fungicides in Florida may imply that in this state Fungi are the largest threat the strawberry growing compared to insects or herbs. The top two chemicals used in California are under the the other class of chemicals, which I found interesting as with the high number of fungicides and insecticides seen in the bar graph to be used in California I was expecting their to be both classes in the top 5 most used chemicals.
 
-LOOK AT HOW THE USAGE OF THESE THREE CHEMICALS CHANGE PER YEAR FOR CALIFORNIA AND FLORIDA
+After finding the three chemicals that were most commonly used in both states, I was interested in uncovering by how much that total usage of each of these chemicals changed over the years for California and Florida. To visualize this, I create a line plot, using ggplot, that plotted the total usage trajectory of each of the three top chemicals over the years 2021 and 2023 for the two states.
 
 ```{r}
+#| label: create a plot to visualize how the top 3 shared chemical usage changed over time in both states 
+#| echo: false
+
+# filter the top 10 chemical data sets to just include data regarding the three chemicals of choice
 top_3chem_ca <- top_chem_ca |> filter(Name == "CAPTAN " | Name == "THIRAM " | Name =="CYPRODINIL ")
 top_3chem_fl <- top_chem_fl |> filter(Name_fl == "CAPTAN " | Name_fl == "THIRAM " | Name_fl =="CYPRODINIL ")
-# Calculate yearly trends for the top 5 chemicals in California
+
+# calculate the yearly trends for the top 3 chosen chemicals for California
 yr_chem_ca <- s_sur_ca %>%
   filter(Name %in% top_3chem_ca$Name, Metric == " MEASURED IN LB" & Domain != "TOTAL)" & Domain != "FERTILIZER") %>%
   group_by(Year, Name) %>%
   summarise(yearly_usage = sum(Value, na.rm = TRUE))
 
-# Calculate yearly trends for the top 5 chemicals in Florida
+# calculate the yearly trends for the top 3 chosen chemicals for Florida
 yr_chem_fl <- s_sur_fl %>%
   filter(Name %in% top_3chem_fl$Name_fl, Metric == " MEASURED IN LB" & Domain != "TOTAL)" & Domain != "FERTILIZER") %>%
   group_by(Year, Name) %>%
   summarise(yearly_usage = sum(Value, na.rm = TRUE))
 
 
-# Create line plots for California and Florida
+# create line plots of Yearly Usage of the three chemicals from 2021 to 2023 for California and Florida
 yr_chem_ca_plot <- ggplot(yr_chem_ca, aes(x = Year, y = yearly_usage*1e-3, color = Name, group = Name)) +
   geom_line() +                            
   geom_point() +                           
@@ -471,7 +494,7 @@ yr_chem_ca_plot <- ggplot(yr_chem_ca, aes(x = Year, y = yearly_usage*1e-3, color
        x = "Year",
        y = "Yearly Usage (kip)",
        color = "Chemical Type") +
-  scale_color_manual(values = c("red", "blue", "green"))+ # Customize colors for each chemical
+  scale_color_manual(values = c("red", "blue", "green"))+ 
   scale_x_continuous(breaks = c(2021, 2023))
 
 yr_chem_fl_plot <- ggplot(yr_chem_fl, aes(x = Year, y = yearly_usage*1e-3, color = Name, group = Name)) +
@@ -481,125 +504,125 @@ yr_chem_fl_plot <- ggplot(yr_chem_fl, aes(x = Year, y = yearly_usage*1e-3, color
        x = "Year",
        y = "Yearly Usage (kip)",
        color = "Chemical Type") +
-  scale_color_manual(values = c("red", "blue", "green"))+ # Customize colors for each chemical
+  scale_color_manual(values = c("red", "blue", "green"))+ 
   scale_x_continuous(breaks = c(2021, 2023))
 
+# use grid.arrange() to plot both graphs in the same viewing window
 grid.arrange(yr_chem_ca_plot, yr_chem_fl_plot, ncol = 1)
 ```
+From the two line graphs produced above, it can be seen that for both California and Florida the usage of Captan and Cyprodinil have slowly increased over the years while the action of the chemical Thiram changes between the states. In California, the yearly usage of the chemical Thiram also goes up (similar to the other two chemicals), but in Florida the yearly usage of the same chemical drops instead. In California, the upward trend in Thiram usage could be driven by rising pest challenges or changing environmental factors that make this specific chemical more necessary. In contrast, the declining use of Thiram in Florida may suggest a shift in pest management strategies, possibly due to changes in pest pressure or the adoption of alternative chemicals to counter the particular fungi that this chemical in particular addresses. This might be the case rather than a more overarching shift away from fungicides as the other two fungicides (Captan and Cyprodinil) are still being utilized as the years progress.
 
 #### Data Analysis - Income
 
-INCOME ANALYSIS - FARM SALES LOOK AT NET INCOME BASED OFF FARM SALES FROM PRODUCERS IN CA VS FL
+An additionally important area of focus in this analysis is the economic trends that follow strawberry production within the two states. Understanding how different levels of sales contribute to profitability is crucial for evaluating the financial sustainability of such farms. Identifying the sale thresholds at which farms begin to experience positive net income, can help uncover key insights that can optimize production and sales strategies. Additionally, examining income in relation to market types—whether organic, fresh, or processing—can provide valuable context for understanding market preferences. This helps identify which market types are more lucrative, allowing producers to better target their efforts and capitalize on high-demand areas.
+
+The data provided within the `CENSUS` portion of the data set provides insight into the correlation between Farm Sales and Net Income and I was interested in seeing the relationship between the two variables, particularly in regards to at which range of farm sales does the farm being to produce a positive net income. To visualize this I created a table that shows the net income of each state for a give range of Farm Sales in dollars.
 
 ```{r}
 #| label: create figures to visualize net income by farm sales
 #| echo: false
 
-#CALIFORNIA 
+# filter the California census data to only consider Farm Sales as the domain
 netinc_ca_farm <- s_cen_ca_pr |> filter(Domain == "FARM SALES")
-# COVERT CHAR TO NUM TO REORDER ROWS BASED ON VALUES
+
+# the values in Farm Sales are originally chars so first convert to numeric so that the rows can be reordered based on   # ascending values
 netinc_ca_farm$Lower <- as.numeric(gsub(",", "", netinc_ca_farm$Lower))
 netinc_ca_farm$Upper <- as.numeric(gsub(",", "", netinc_ca_farm$Upper))
 netinc_ca_farm <- netinc_ca_farm[order(netinc_ca_farm$Lower, decreasing = F), ]
 
-#FLORIDA
+# filter the Florida census data to only consider Farm Sales as the domain
 netinc_fl_farm <- s_cen_fl_pr |> filter(Domain == "FARM SALES")
-# COVERT CHAR TO NUM TO REORDER ROWS BASED ON VALUES
+
+# the values in Farm Sales are originally chars so first convert to numeric so that the rows can be reordered based on   # ascending values
 netinc_fl_farm$Lower <- as.numeric(gsub(",", "", netinc_fl_farm$Lower))
 netinc_fl_farm$Upper <- as.numeric(gsub(",", "", netinc_fl_farm$Upper))
 netinc_fl_farm <- netinc_fl_farm[order(netinc_fl_farm$Lower, decreasing = F), ]
 colnames(netinc_fl_farm) <- paste(colnames(netinc_fl_farm), "_fl", sep = "")
 
+# combine both tables into one using column bind
 netinc_farm <- cbind(netinc_ca_farm, netinc_fl_farm)
+
+# select the columns of interest for the final table
 netinc_farm_table <- netinc_farm |> select(Lower, Upper, Value, `CV (%)`, Value_fl, `CV (%)_fl`)
 
-# MAKE THE VALUE COLUMNS EASIER TO READ
-# Remove commas, convert to numeric
+# make the values in the table easier to read by labeling them with dollars and writing them in short had (by millions)
+# remove commas in the char so it is able to convert to numeric
 netinc_farm_table$Value <- as.numeric(gsub(",", "", netinc_farm_table$Value))
-# Create a more concise format for money (e.g., converting to millions)
+# create a more concise format for money
 netinc_farm_table$Value <- scales::label_dollar(scale = 1e-6, suffix = "M")(netinc_farm_table$Value)
+# remove commas in the char so it is able to convert to numeric
 netinc_farm_table$Value_fl <- as.numeric(gsub(",", "", netinc_farm_table$Value_fl))
-# Create a more concise format for money (e.g., converting to millions)
+# create a more concise format for money
 netinc_farm_table$Value_fl <- scales::label_dollar(scale = 1e-6, suffix = "M")(netinc_farm_table$Value_fl)
 
-# RE NAME THE COLUMNS TO GET RID OF THE _FL
+# rename the columns to get rid of the _fl that was used when selecting columns for the table
 colnames(netinc_farm_table) <- gsub("_fl", "", colnames(netinc_farm_table))
 
-# TABLE TO REPRESENT THE DATA
+# display the combined table showcasing the average net income by farm sales per state using kable
 netinc_farm_table |>
   kbl(caption = "California and Florida Average Net Income in 2022 by Farm Sales") |> 
   kable_classic(full_width = F, html_font = "Cambria") |> 
   add_header_above(c("Farm Sales ($)" = 2, "California" = 2, "Florida" = 2))
 ```
 
-FLORIDA STARTS MAKING A PROFITABLE INCOME AT AN EARLIER FARM SALE RANGE COMPARED TO CALIFORNIA --\> A POSITIVE NET INCOME STARTS AS FARM SALES ARE BETWEEN 50000 TO 99999 WHILE CALIFORNIA ONLY STARTS SEEING A POSITIVE NET INCOME WHEN FARM SALES ARE BETWEEN 250000 TO 499999
+Looking at the table above it can be seen how Florida begins to make a profitable (net positive) income at an earlier Farm Sale range when compared to California. For Florida, a positive net income starts as Farm Sales are between \$50,000 and \$99,999 while California only starts seeing a positive net income when Farm Sales are significantly higher between \$250,000 and \$499,999. This disparity suggests that Florida farmers can reach profitability at smaller scales, likely due to factors such as lower operational costs or reduced land and labor expenses. Its agricultural industry may also face less competition, allowing producers to become profitable more easily. On the other hand, California's higher costs, driven by factors like labor, land, environmental regulations, and a larger, more competitive agricultural industry, demand higher sales to offset these expenses and reach profitability. Additionally, California's farmers may deal with larger production volumes or more complex farming practices that contribute to higher operational costs. This difference in profitability thresholds also highlights the impact of scale economies in California, where larger-scale operations are needed to cover costs and achieve profit.
 
-INSIGHTS: 1. Difference in Profitability Threshold: Florida starts making a profitable income at a much lower farm sales range (between \$50,000 to \$99,999).
-
-In contrast, California only begins seeing a positive net income when farm sales are between \$250,000 to \$499,999.
-
-This indicates that, on average, Florida farmers can start turning a profit at lower levels of farm sales compared to California farmers. Florida may have lower operational or fixed costs, better market conditions, or more favorable climate factors, allowing farms to become profitable at a smaller scale. California, on the other hand, may have higher costs or more competition, meaning it requires higher sales to reach profitability.
-
-2.  Cost Structures: The fact that Florida becomes profitable at lower sales could also point to differences in cost structures between the two states.
-
-Florida farmers might have lower labor, land, or production costs, which allows them to become profitable at a lower sales threshold.
-
-California, with its larger and more established agricultural industry, might experience higher input costs (labor, land, water, regulations, etc.), meaning farms need to sell more to cover these expenses and generate a profit.
-
--ORGANIC STRAW PROCESSING VS FRESH SALES PRICES?
-
-FLORIDA HAS NO PROCESSING DATA AND CALIFORNIA ONLY HAS HIDDEN VALUES FOR FRESH MARKET AND PROCESSING SALES IN \$ SO WILL COMPARE ORGANIC + FRESH MARKET SALES MEASURE BY CWT (WEIGHT/VOLUME) BETWEEN THE TWO STATES
-
-CALIFORNIA HAS INFO FOR ALL THREE WHEN SALES ARE MEASURED BY CWT SO WILL OCMPARE TO SEE WHICH METHOD PRODUCES THE MOST SALES
+In addition to looking at the affect of Farm Sales on Net Income I was also interested in looking to see how sales in general were affected based on the market type used- whether it is organic, fresh market, or processing. However, the data in the given data set is very limited and missing some values, so the full scope of my question could not be considered but parts of it are able to. California has information for all three market types (organic, fresh market, and processing) when sales are `MEASURED BY CWT`, so I am interested to compare and see which market type produces the most sales for strawberries grown in California. I visualized this comparison through the generation of a bar graph, using ggplot, the compares the sale methods by weight.   
 
 ```{r}
-#| label: create figure to compare organis, fresh market, and processing sales in california
+#| label: create figure to compare organic, fresh market, and processing sales in california
 #| echo: false
 
-#TAKE JUST CALIFRONIA DATA MEASURED IN CWT
+# filter California census data (commodity = strawberry) based on entries that are "MEASURED IN CWT"
 s_cen_ca_cwt <- s_cen_ca_str |> filter(Metric == " MEASURED IN CWT")
 
-#GET RID OF " - SALES" AS IT IS REPETIITVE FOR LABELING
+# remove the " - SALES" from the Item column as it is repetitive for labeling
 s_cen_ca_cwt$Item <- gsub(" - SALES", "", s_cen_ca_cwt$Item)
 
-# MAKE VALUES FROM CHAR TO NUMERIC
+# to ensure the y-axis values are ordered correctly convert the Value column that was originally chars to numeric
 s_cen_ca_cwt$Value <- as.numeric(gsub(",", "", s_cen_ca_cwt$Value))*1e-6
 
+# create a bar graph to compare the Sale Methods by Weight for California
 ggplot(s_cen_ca_cwt, aes(x = Item, y = Value)) +
-  geom_bar(stat = "identity", fill = "seagreen4") +  # Ensure stat="identity" to use actual values
+  geom_bar(stat = "identity", fill = "seagreen4") +  
   geom_text(aes(label = Value), position = position_dodge(width = 0.9), vjust = -0.5) +
   labs(title = "Sale Methods by Weight for California",
        x = "Sale Type",
        y = "Value (in M CWT)",
        fill = "State")
-
 ```
+The bar graph highlights that in California, the vast majority of strawberry sales come from the fresh market and organic sectors rather than processing, suggesting a strong consumer preference for fresh and organic produce. The larger pull by the fresh and organic markets to consumers may be to a perception that fresher produce is better quality and more beneficial to those who eat it as well as the environment. This means that it would be import for California farmers to prioritize these markets, as they offer higher profitability (sales) compared to processed strawberries, that could come in the form of jams or jellies, meaning that more land, space, and workforce could be allocated for these sectors. 
 
-IN CALIFORNIA A HUGE MAJORITY OF THE SALES COME FROM FRESH MARKET AND ORGANIC COMPARED TO PROCESSING --\< CONSUMERS CARE MORE AND ARE MUCH MORE WILLING TO BY FRESH AND ORGANISH FRUITS COMPARED TO PROCESSED ONES
+In the given data set however, Florida has no processing data and California only has hidden values for the Fresh Market and Processing sales in $, so instead I will compare organic and fresh market sales measured by weight/volume (in CWT) between the two states. To make this comparison I will generate a 2 variable bar graph, using ggplot, that compares the Value of product sold, in weight, for each market type between the two states. 
 
 ```{r}
 #| label: create figure to compare organic + fresh market sales between california and florida
 #| echo: false
 
-#TAKE JUST ORGANIC + FRESH MARKET SALE VALUES
+# filter the sales data set to only include ORGANIC and FRESH MARKET sales as we have data for those
 s_cen_sales <- s_cen_ca_fl_str |> filter(Item == " ORGANIC - SALES" | Item == " FRESH MARKET - SALES")
 
-#TAKE JUST MEASURED BY CWT TO HVAE VALUES IN ALL CASES
+# filter the data set once more to just take the metric when it is MEASURED IN CWT as it has values for both cases above
 s_cen_sales <- s_cen_sales |> filter(Metric == " MEASURED IN CWT")
 
-#GET RID OF " - SALES" AS IT IS REPETIITVE FOR LABELING
+# remove " - SALES" as it is repetitive for labeling
 s_cen_sales$Item <- gsub(" - SALES", "", s_cen_sales$Item)
 
-# MAKE VALUES FROM CHAR TO NUMERIC
+# to ensure the y-axis values are ordered correctly convert the Value column that was originally chars to numeric
 s_cen_sales$Value <- as.numeric(gsub(",", "", s_cen_sales$Value))*1e-6
 
+# create a bar graph to compare the Fresh and Organic Market Sales by Weight for both states
 ggplot(s_cen_sales, aes(x = Item, y = Value, fill = State)) +
-  geom_bar(stat = "identity", position = "dodge") +  # position="dodge" places bars side by side
+  geom_bar(stat = "identity", position = "dodge") + 
   geom_text(aes(label = Value), position = position_dodge(width = 0.9), vjust = -0.5) +
   labs(title = "Organic and Fresh Market Sales by Weight for California and Florida",
        x = "Sale Type",
        y = "Value (in M CWT)",
        fill = "State") +
   scale_fill_manual('State', values=c('seagreen4','slategray2'))
-
 ```
+From the above bar graph it can be seen that for a given state the weight of produce sold is either exactly the same or very similar regardless of whether the sale type was in Fresh Market or Organic. However, comparing the two states together, it can be seen that by volume in both sale types California sells a significant amount more of strawberries, around 21 times more, than Florida. This stark contrast points to California’s larger agricultural scale, more extensive production capacity, and perhaps greater market reach allowing the state to sell much more of its goods. California’s dominance in strawberry sales likely reflects its established infrastructure, larger growing areas, and longer growing seasons, while Florida, though a significant producer (the second largest of all the states) seems to operate on a comparatively smaller scale.
+
+### Conclusion
+
+In conclusion, the data cleaning and exploratory data analysis (EDA) processes have provided valuable insights into the complexities of strawberry production, sales, and chemical usage across California and Florida. These preliminary analyses have allowed for the identification of key patterns, such as the differing profitability thresholds between the two states and the significant difference in the volume of strawberries sold. However, this is just the beginning as the analysis I provided so far in this document has only scratched the surface of all the information and comparisons that could be generated through the original data set- meaning that are many more areas that need further exploration. Further analysis into this data set as well as creating others through USDA that may focus even more heavily on, for example, the economic situation of strawberry production, could help optimize farming strategies and contribute further to more sustainable practices. Continuing analysis through this cleaned data set can help uncover more valuable insights for strawberry producers and stakeholders in the agricultural industry.
