@@ -47,7 +47,7 @@ To provide an initial cleaning of the Strawberry Data Set the function drop_one_
 strawberry_clean <- strawberry |> drop_one_value_col()
 ```
 
-When looking at the cleaned Strawberry Data Set it can be seen that the data set can be further split into two more broad programs of `Census` and `Survey` as the information (variables of interest) held within both programs vastly differ. For example, the `Census` data holds information regarding Gains, Losses, and Net Income while the `Survey` data provides insight into utilized chemicals. To therefore ease the process of further data cleaning the cleaned Strawberry Data Set will be split into two new data sets: one consisting of `Census` data and one consisting of `Survey` data.
+When looking at the cleaned Strawberry Data Set it can be seen that the data set can be further split into two more broad programs of `CENSUS` and `SURVEY` as the information (variables of interest) held within both programs vastly differ. For example, the `CENSUS` data holds information regarding Gains, Losses, and Net Income while the `SURVEY` data provides insight into utilized chemicals. To therefore ease the process of further data cleaning the cleaned Strawberry Data Set will be split into two new data sets: one consisting of `CENSUS` data and one consisting of `SURVEY` data.
 
 ```{r}
 #| label: split strawberry_clean into census and survey
@@ -68,9 +68,11 @@ s_sur <- straw_sur |> drop_one_value_col(prt_val = T)
 
 #### Clean Survey Data
 
-As eventually I would like to gain insight into the usage of chemicals in the production of strawberries, I will further clean the Survey Data as the data within this Program provide the data regarding the type and usage of chemicals in the growing process. The original Survey Data consists of columns that have multiple data entries in each as well as columns that hold data that should be placed in a different column.
+As eventually I wanted to gain insight into the usage of chemicals in the production of strawberries, I further cleaned the `SURVEY` Data as the information within this `Program` provided the data regarding the type and usage of chemicals in the growing process. The original `SURVEY` Data consists of columns that have multiple data entries in each as well as columns that hold data that should be placed in a different column.
 
 The `grepl()` function is utilized within the code to recognize patterns within columns of data to shift the location of incorrectly placed data to the correct ones. To tackle the issue regarding multiple data entries in a single cell the `separate_wider_delim()` function is used to split the multiple entries into separate columns based on a chosen delimiter.
+
+First, the non chemical columns in the `SURVEY` data will be cleaned.
 
 ```{r}
 #| label: clean strawberry survey table (non chemical cols)
@@ -84,11 +86,10 @@ s_sur_ca_fl$`State ANSI`[grepl("STRAWBERRIES -", s_sur_ca_fl$Fruit)] <- s_sur_ca
 s_sur_ca_fl$Fruit[grepl("STRAWBERRIES -", s_sur_ca_fl$Fruit)] <- "STRAWBERRIES"
 
 # AVG is currently split between Item and Metric but it should eventually all be in its own column of Meas Type so it    # will be temporarily moved until the Meas Type column is produced 
-
 s_sur_ca_fl$Period[grepl("AVG", s_sur_ca_fl$Item)] <- s_sur_ca_fl$Item[grepl("AVG", s_sur_ca_fl$Item)]
 s_sur_ca_fl$Period[grepl("AVG", s_sur_ca_fl$Metric)] <- s_sur_ca_fl$Metric[grepl("AVG", s_sur_ca_fl$Metric)]
 
-# first split up the Fruit column to just have Strawberry
+# split up the Fruit column to just have Strawberry by splitting any entries that have "STRAWBERRIES -" in them
 s_sur_ca_fl <- s_sur_ca_fl |> separate_wider_delim(cols = Category,
                                                    delim = '-',
                                                    names = c("Category",
@@ -96,18 +97,21 @@ s_sur_ca_fl <- s_sur_ca_fl |> separate_wider_delim(cols = Category,
                                                              "Meas Type"),
                                                    too_many = "error",
                                                    too_few = "align_start")
-# MOVES AVG INTO MEAS TYPE COL
+
+# move the temporarily shifted AVG column to Meas Type column
 s_sur_ca_fl$`Meas Type`[grepl("AVG", s_sur_ca_fl$Period)] <- s_sur_ca_fl$Period[grepl("AVG", s_sur_ca_fl$Period)]
 
-# MOVE ALL VALUES STARTING WITH MEASURED TO METRIC COL (FROM CATEGORY AND ITEM)
+# move all entries starting with "MEASURED" to the Metric column (these are originally split between Category and Item)
 s_sur_ca_fl$Metric[grepl("MEASURED", s_sur_ca_fl$Category)] <- s_sur_ca_fl$Category[grepl("MEASURED", s_sur_ca_fl$Category)]
 s_sur_ca_fl$Metric[grepl("MEASURED", s_sur_ca_fl$Item)] <- s_sur_ca_fl$Item[grepl("MEASURED", s_sur_ca_fl$Item)]
 
+# move the columns that originally had STRAWBERRIES in the Fruit column to the Category Column
 s_sur_ca_fl$Category[grepl("STRAWBERRIES", s_sur_ca_fl$`State ANSI`)] <- s_sur_ca_fl$`State ANSI`[grepl("STRAWBERRIES", s_sur_ca_fl$`State ANSI`)]
 
+# remove columns that are not of interest for further data analysis
 s_sur_ca_fl <- s_sur_ca_fl |> select(-Period, -`Week Ending`, -`State ANSI`, -Item)
 
-# MOVE STRAWBERRY COLS BACK TO CATEGORY TO RE SPLIT
+# split up the values with "STRAWBERRIES -" that was move back to the Category column into Category and Item with the    # delimiter '-'
 s_sur_ca_fl <- s_sur_ca_fl |> separate_wider_delim(cols = Category,
                                                    delim = '-',
                                                    names = c("Category",
@@ -115,20 +119,23 @@ s_sur_ca_fl <- s_sur_ca_fl |> separate_wider_delim(cols = Category,
                                                    too_many = "error",
                                                    too_few = "align_start")
 
+# move all of the values placed in the item column from the first separate_wider_delim to the Item column
 s_sur_ca_fl$Item[!is.na(s_sur_ca_fl$item)] <- s_sur_ca_fl$item[!is.na(s_sur_ca_fl$item)]
+
+# remove the item column as all necessary information is now in Item
 s_sur_ca_fl <- s_sur_ca_fl |> select(-item)
 
-# clean up cols by removing leading spaces
+# clean up columns by removing leading spaces using gsub()
 s_sur_ca_fl$Category <- gsub("^\\s+", "", s_sur_ca_fl$Category)
 ```
 
-TALK ABOUT HOW TO GO ABOUT CLEANING THE CHEMICAL COLS
+Next, the chemical related columns of the `SURVEY` data is cleaned in a similar manner- using separate_wider_delim() to separate columns with multiple values and select() and gsub() to respectively remove unwanted columns and remove unwanted parentheses.
 
 ```{r}
 #| label: clean strawberry survey data (chemical cols)
 #| echo: false
 
-#SPLIT DOMAIN INTO DOMIAN (CHEMICAL, TOTAL, OTHER) AND TYPE (FUNGICIDE)
+# split the Domain column into Domain (CHEMICAL, TOTAL, OTHER, etc) and Type (FUNGICIDE, INSECTISIDE, etc)
 s_sur_ca_fl <- s_sur_ca_fl |> separate_wider_delim(cols = Domain,
                                                    delim = ',',
                                                    names = c("Domain",
@@ -136,16 +143,17 @@ s_sur_ca_fl <- s_sur_ca_fl |> separate_wider_delim(cols = Domain,
                                                    too_many = "error",
                                                    too_few = "align_start")
 
-#SPLIT DOMAIN CATEGORY INTO NAME and CODE --> repeat will be getting rid of as its info is already in the domain and type #columsn just made
+# split Domain Category into rep and Name- rep will be removed as it is info already provided in the Domain and Type     # columns
 s_sur_ca_fl <- s_sur_ca_fl |> separate_wider_delim(cols = `Domain Category`,
                                                    delim = ':',
                                                    names = c("rep",
                                                              "Name"),
                                                    too_many = "error",
                                                    too_few = "align_start")
-# remove repeat column
+# remove rep column
 s_sur_ca_fl <- s_sur_ca_fl |> select(-rep)
-#SPLIT NEWLY MADE NAME INTO NAME AND CODE
+
+# split newly made Name into Name and Code with the delimiter of "="
 s_sur_ca_fl <- s_sur_ca_fl |> separate_wider_delim(cols = Name,
                                                    delim = '=',
                                                    names = c("Name",
@@ -153,7 +161,7 @@ s_sur_ca_fl <- s_sur_ca_fl |> separate_wider_delim(cols = Name,
                                                    too_many = "error",
                                                    too_few = "align_start")
 
-# clean up cols by removing ()
+# clean up columns by removing parentheses ()
 s_sur_ca_fl$Name <- gsub("^\\s?\\(", "", s_sur_ca_fl$Name)
 s_sur_ca_fl$Name <- gsub("\\)$", "", s_sur_ca_fl$Name)
 
@@ -162,54 +170,61 @@ s_sur_ca_fl$Code <- gsub("\\)$", "", s_sur_ca_fl$Code)
 
 ```
 
-GLIMPSE OF NEWLY CLEANED TABLE --\> INSTEAD OF THIS FORMAT IT MUCH MORE NICELY?? (using KABLE/kablextra)
+The cleaned Strawberry `SURVEY` data is saved as a .csv for further analysis purposes. This file is found within the Github repository under the name survey_clean.csv
 
 ```{r}
+#| label: save cleaned survey data as .csv
+#| echo: false
+
 write.csv(s_sur_ca_fl, file = "survey_clean.csv", row.names = T)
 ```
 
---\> THEN WITHIN THE TWO THE TWO STATES OF INTEREST ARE FLORIDA AND CALIFORNIA SO FILTER THROIUGH THE NEW TABLES TO JUST CONSIDER THOSE TOO STATES
+Since further analysis will consider and compare the state of California and Florida I split the cleaned `SURVEY` data into two further data sets: one where the state of interest is California and one where it is Florida.
 
 ```{r}
 #| label: split cleaned survey data into california and florida
 #| echo: false
 
+# filter the survey data to only consider the state of California 
 s_sur_ca <- s_sur_ca_fl |> filter(State == "CALIFORNIA")
-s_sur_fl <- s_sur_ca_fl |> filter(State == "FLORIDA")
 
-rm(s_sur, straw_sur)
+# filter the survey data to only consider the state of Florida 
+s_sur_fl <- s_sur_ca_fl |> filter(State == "FLORIDA")
 ```
 
 #### Clean Census Data
 
-HOW USING SEPERATE DATA DELIMETER AND WHAT IS THE DELIMETER TO SPLIT DIFF VARIABLES INTO SEPERATE TABLES; use select to remove unwanted cols (for data analysis) --\> EXPLAIN GREPL()
+As I wanted to also gain insight into the connection between of sales, production, and net income for strawberries production within the two states, I further cleaned the `CENSUS` Data as the information within this `Program` provided the economic data needed to gain clarity on these topics. Like the `SURVEY` data, the original `CENSUS` Data also consists of columns that have multiple data entries as well as columns that hold data that should be placed in a different column.
 
 ```{r}
 #| label: clean strawberry census data
 #| echo: false
 
+# filter the census data to only consider the states of California and Florida
 s_cen_ca_fl <- s_cen |> filter(State == "CALIFORNIA" | State == "FLORIDA")
+
+# remove columns that are necessary for further data analysis
 s_cen_ca_fl <- s_cen_ca_fl |> select(-`State ANSI`)
 
-# LOOK INTO WHAT VALUES ARE IN THE COMMODITY SECTION
+# look what unique values are found within the Commodity column
 unique(s_cen_ca_fl$Commodity)
 
-# SEPERATE INTO TWO FURTHER TABLES WHERE COMMODITY == INCOME AND COMMODITY == STRAWBERRIES
+# Commodity column has two values, INCOME and STRAWBERRIES, which hold differing information within the other columns so # the census data will be separated into two further data sets: one where the Commodity of interest is INCOME and one    # where it is STRAWBERRIES
 s_cen_ca_fl_inc <- s_cen_ca_fl |> filter(Commodity == "INCOME, NET CASH FARM")
 s_cen_ca_fl_str <- s_cen_ca_fl |> filter(Commodity == "STRAWBERRIES")
 
-#NOW DROP ANY COLS THAT HAVE ONLY ONE VALUE
+# check if either of the newly separated tables have any columns with only one value and remove those
 s_cen_ca_fl_inc <- s_cen_ca_fl_inc |> drop_one_value_col(prt_val = T)
 s_cen_ca_fl_str <- s_cen_ca_fl_str |> drop_one_value_col(prt_val = T)
 ```
 
-NOW JUST LOOK PARTICULARLY WITHIN THE INCOME DATA TABLE
+Now looking just at the data set where the `Commodity` of interest is `INCOME`, the same process undertaken to clean the `SURVEY` data is repeated here for the `CENSUS` data through the use of the functions separate_wider_delim(), select(), and gsub(). Here separate_wider_delim() is used to separate and get rid of the leading "OF OPERATIONS - " and "OF PRODUCERS - " with "F" and then "-" as delimiters.
 
 ```{r}
 #| label: clean strawberry census data (commodity = income)
 #| echo: false
 
-#GET RID OF THE LEADING "OF OPERATIONS - " IN ITEM COLUMN
+# separate "OF OPERATIONS -" and "OF PRODUCERS -" between the F in OF to remove the leading OF
 s_cen_ca_fl_inc <- s_cen_ca_fl_inc |> separate_wider_delim(cols = Item,
                                                    delim = 'F ',
                                                    names = c("remove",
@@ -217,7 +232,7 @@ s_cen_ca_fl_inc <- s_cen_ca_fl_inc |> separate_wider_delim(cols = Item,
                                                    too_many = "error",
                                                    too_few = "align_start")
 
-# NOW SEPARATE NEW TYPE COLUMN INTO TYPE OR Inc Type
+# separate "OPERATIONS -" and "PRODUCERS -" using "- " as a delimiter to seperate the information within Type and Inc    # (Income) Type
 s_cen_ca_fl_inc <- s_cen_ca_fl_inc |> separate_wider_delim(cols = Type,
                                                    delim = '- ',
                                                    names = c("Type",
@@ -225,7 +240,7 @@ s_cen_ca_fl_inc <- s_cen_ca_fl_inc |> separate_wider_delim(cols = Type,
                                                    too_many = "error",
                                                    too_few = "align_start")
 
-# NOW GET RID OF THE REDUNANT/REPEATED DOMAIN INDICATOR IN DOMAIN CATEGORY SECTION
+# split Domain Category into rep and Range- rep will be removed as it is info already provided in the Domain
 s_cen_ca_fl_inc <- s_cen_ca_fl_inc |> separate_wider_delim(cols = `Domain Category`,
                                                    delim = ': ',
                                                    names = c("rep",
@@ -233,20 +248,21 @@ s_cen_ca_fl_inc <- s_cen_ca_fl_inc |> separate_wider_delim(cols = `Domain Catego
                                                    too_many = "error",
                                                    too_few = "align_start")
 
-# further clean up table -> get rid of reduntant columns to remove and get rid of () in Range
+# remove remove and rep columns
 s_cen_ca_fl_inc <- s_cen_ca_fl_inc |> select(-remove, -rep)
 
+# clean up columns by removing parentheses ()
 s_cen_ca_fl_inc$Range <- gsub("^\\s?\\(", "", s_cen_ca_fl_inc$Range)
 s_cen_ca_fl_inc$Range <- gsub("\\)$", "", s_cen_ca_fl_inc$Range)
 ```
 
-NOW FIX HOW THE MONEY VALUES ARE DEPICTED IN THE TABLE (MAKE THEM NUMERIC)
+The values in `FARM SALES` are provided as ranges between two values and to make data visualization easier I split the Range column into its `Lower` and `Upper` bounds. These ranges however had additional information indicating the units of interest (\$ or ACRES) and so gsub() was used so that only numerical values were left. There were additionally two special cases where OR MORE and LESS THAN were used, so to ensure only numerical values were left I changed LESS THAN (Value) to go from 0 to the particular value by using gsub() to substitute out LESS THAN for "0-" and used separate_wider_delim to keep 0 in the `Lower` column and (Value) in the Upper bound column. A similar process was utilized for OR MORE but rather than 0 the `Upper` bound for that row was left as NA, as the cap for the Farm Sales value is unknown.
 
 ```{r}
 #| label: clean strawberry census data (commodity = income) - split range into numerical values
 #| echo: false
-#MAKE LOW AND HIGH COLS AND MAKE THEM AS $? --> FARM SALES ($)
-# SEPARATE RANGE INTO LOW AND HIGH VLAUES 
+
+# separate the Range column into two new columns representing the Lower and Upper bounds
 s_cen_ca_fl_inc <- s_cen_ca_fl_inc |> separate_wider_delim(cols = Range,
                                                    delim = ' TO ',
                                                    names = c("Lower",
@@ -254,42 +270,52 @@ s_cen_ca_fl_inc <- s_cen_ca_fl_inc |> separate_wider_delim(cols = Range,
                                                    too_many = "error",
                                                    too_few = "align_start")
 
-#USE GSUB TO GET RID OF TRAILING SUFFIXES (ACRES OR $)
+# use gsub() to get rid of the trailing units (ACRES OR $)
 s_cen_ca_fl_inc$Upper <- gsub("ACRES", "", s_cen_ca_fl_inc$Upper)
 s_cen_ca_fl_inc$Upper <- gsub("\\$", "", s_cen_ca_fl_inc$Upper)
 
-# get rid of the less than or more than to be just a numerical range
+# use gsub() to get rid of the "LESS THAN" or "OR MORE" to allow the Lower and Upper columns to be only numerical values
 s_cen_ca_fl_inc$Lower <- gsub(" OR MORE \\$", "", s_cen_ca_fl_inc$Lower)
 s_cen_ca_fl_inc$Lower <- gsub(" OR MORE ACRES", "", s_cen_ca_fl_inc$Lower)
 
-#GET RID OF LESS THAN
 s_cen_ca_fl_inc$Lower <- gsub("LESS THAN ", "0 -", s_cen_ca_fl_inc$Lower)
 s_cen_ca_fl_inc$Lower <- gsub("1,000 \\$", "999", s_cen_ca_fl_inc$Lower)
+
+# seperate the Lower column that now has "0-" as the artificial lower bound for the "LESS THAN" row into Lower, which    # will include the 0, and up which is a temporary column that will be removed
 s_cen_ca_fl_inc <- s_cen_ca_fl_inc |> separate_wider_delim(cols = Lower,
                                                    delim = ' -',
                                                    names = c("Lower",
                                                              "up"),
                                                    too_many = "error",
                                                    too_few = "align_start")
-# MOVE VALS FROM TEMP COL up TO ACTUAL COL UPPER
+
+# move the values from the temporary column up to the actual column UPPER and remove up
 s_cen_ca_fl_inc$Upper[grepl("999", s_cen_ca_fl_inc$up)] <- s_cen_ca_fl_inc$up[grepl("999", s_cen_ca_fl_inc$up)]
 s_cen_ca_fl_inc <- s_cen_ca_fl_inc |> select(-up)
-
-#FOCUS ON PRODUCERS + FARM SALES!!! 
-#make a two var rable comparing operator farm sales for california and florida
 ```
 
-SEPERATE NEWWLY CLEANED STRAWBERRY DATASET INTO CALIFORNIA AND FLORIDA AND THEN SEPERATE EACH INTO OPERATORS AND PRODUCERS SO JUST PRODUCERS CAN BE LOOKED INTO
+The cleaned Strawberry `CENSUS` data where `Commodity` is `INCOME` is saved as a .csv for further analysis purposes. This file is found within the Github repository under the name census_inc_clean.csv
+
+```{r}
+#| label: save cleaned census data (commodity = income) as .csv
+#| echo: false
+
+write.csv(s_cen_ca_fl_inc, file = "census_inc_clean.csv", row.names = T)
+```
+
+Since further analysis will consider and compare the state of California and Florida I split the cleaned `CENSUS` data, where the `Commodity` is `INCOME` into two further data sets: one where the state of interest is California and one where it is Florida. Within each data set however, there is additionally a separation between `OPERATIONS` and `PRODUCERS` so each State specific data set will be further split into two new data sets so that there is an individual `OPERATIONS` and `PRODUCERS` for both states. 
 
 ```{r}
 #| label: split cleaned census data (commodity = income) by both state and type
 #| echo: false
 
-#SPLIT THE DATA BY STATE
+# filter the census data to only consider the state of California 
 s_cen_ca <- s_cen_ca_fl_inc |> filter(State == "CALIFORNIA")
+
+# filter the survey data to only consider the state of Florida 
 s_cen_fl <- s_cen_ca_fl_inc |> filter(State == "FLORIDA")
 
-#SPLIT THE STATE DATA BY OPERATORS VS PRODUCES
+# filter the state specifies census data by "OPERATIONS" AND "PRODUCERS"
 s_cen_ca_op <- s_cen_ca |> filter(Type == "OPERATIONS ")
 s_cen_ca_pr <- s_cen_ca |> filter(Type == "PRODUCERS ")
 
@@ -297,29 +323,40 @@ s_cen_fl_op <- s_cen_fl |> filter(Type == "OPERATIONS ")
 s_cen_fl_pr <- s_cen_fl |> filter(Type == "PRODUCERS ")
 ```
 
-NOW LOOK PARTICULARLY IN THE STRAWBERRY TABLE TO LEARN ABOUT PRODUCTION AND SALES
+Now looking at the data set where the `Commodity` of interest is `STRAWBERRIES`, the same process undertaken to clean the earlier `CENSUS` data is repeated here the use of the functions grepl() and select(). Here grepl() is used to move all the entries in the `Item` column that begin with "MEASURED" to the `Metric` column and all entries with "ORGANIC -" to the `Item` column from '`Category`. This second shift leaves everything in Category to have only one value so it can be dropped from the cleaned final data. 
 
 ```{r}
 #| label: clean strawberry census data (commodity = strawberry)
 #| echo: false
 
-#MOVE ALL THE ENTRIES WITH MEASURED TO THE METRIC COL (FROM THE ITEM COL)
+# move all entries with "MEASURED" from the Item column to the Metric column
 s_cen_ca_fl_str$Metric[grepl("MEASURED", s_cen_ca_fl_str$Item)] <- s_cen_ca_fl_str$Item[grepl("MEASURED", s_cen_ca_fl_str$Item)]
 
-# MOVES ALL ENTRIES WITH "ORGANIC -" TO ITEM COLUMN FROM CATEGORY (ALL ARE ORGANIC SO AFTER THIS MOVE CAN GET RID OF THE COLUMN AS IT ONLY HAS ONE VALUE)
+# move all entries with "ORGANIC -" from the Category column to the Item column
 s_cen_ca_fl_str$Item[grepl("ORGANIC -", s_cen_ca_fl_str$Category)] <- s_cen_ca_fl_str$Category[grepl("ORGANIC -", s_cen_ca_fl_str$Category)]
 
+# the Category column now only has one value so it can be removed from the cleaned data
 s_cen_ca_fl_str <- s_cen_ca_fl_str |> select(-Category)
-
-#cleaned TABLE 
-head(s_cen_ca_fl_str)
 ```
+The cleaned Strawberry `CENSUS` data where `Commodity` is `STRAWBERRIES` is saved as a .csv for further analysis purposes. This file is found within the Github repository under the name census_str_clean.csv
+
+```{r}
+#| label: save cleaned census data (commodity = strawberries) as .csv
+#| echo: false
+
+write.csv(s_cen_ca_fl_str, file = "census_str_clean.csv", row.names = T)
+```
+
+Since further analysis will consider and compare the state of California and Florida I split the cleaned `CENSUS` data, where the `Commodity` is `STRAWBERRIES` into two further data sets: one where the state of interest is California and one where it is Florida. 
 
 ```{r}
 #| label: split cleaned census data (commodity = strawberry) by state
 #| echo: false
 
+# filter the census data to only consider the state of California 
 s_cen_ca_str <- s_cen_ca_fl_str |> filter(State == "CALIFORNIA")
+
+# filter the census data to only consider the state of Florida 
 s_cen_fl_str <- s_cen_ca_fl_str |> filter(State == "FLORIDA")
 ```
 
