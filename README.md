@@ -34,6 +34,13 @@ census_inc_clean.csv - cleaned census dataset where Commodity was INCOME
 census_str_clean.csv - cleaned strawberry dataset where Commodity was STRAWBERRIES
 
 ## Citations
-Function Help
+### Function Help
 
 grepl: https://hyperskill.org/university/r-language/grepl-in-r
+
+### Chemical Toxicity
+Captan: https://www.epa.gov/sites/default/files/2016-09/documents/captan.pdf
+
+Thiram: https://www3.epa.gov/pesticides/chem_search/reg_actions/reregistration/fs_PC-079801_1-Sep-04.pdf
+
+Cyprodinil: https://www3.epa.gov/pesticides/chem_search/reg_actions/registration/fs_PC-288202_06-Apr-98.pdf
