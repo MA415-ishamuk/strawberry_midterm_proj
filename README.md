@@ -1,5 +1,7 @@
 # MA415 Midterm Project - Strawberry Exploratory Data Analysis
 
+Isha Mukundan
+
 ## Project Description 
 To complete the assignment, focus on strawberries grown in California and Florida only and explore these issues:
 
