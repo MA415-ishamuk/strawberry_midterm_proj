@@ -15,11 +15,18 @@ Be sure to cite your sources, including individuals, websites, and chatbots. In 
 
 ## File Descriptions
 strawb_mar6.csv - USDA NASS Strawberry Data Set
+
 my_functions.R - Source file for additional functions used within project
+
 MA415_midterm_proj.qmd - Quarto Document comprised of project code 
+
 MA415_midterm_proj.html - HTML version of code and outputs from Quarto Document 
+
 MA415_midterm_proj.pdf - PDF version of finalized MA415 Midterm Project (no code, just figures and commentary)
 
 ## Citations
-Function Help:
-grepl: https://hyperskill.org/university/r-language/grepl-in-r
+Function Help
+
+grepl: 
+
+https://hyperskill.org/university/r-language/grepl-in-r
