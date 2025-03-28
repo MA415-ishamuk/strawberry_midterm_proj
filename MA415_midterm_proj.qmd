@@ -1,0 +1,576 @@
+---
+title: "MA415 Midterm Project - Isha Mukundan"
+format: html
+editor: visual
+---
+
+## USDA NASS Strawberry Data Set
+
+EXPLAIN WHAT IS BEING DONE (FIGURE OUT A BETTER HEADER AND CREATE SUB HEADERS INSTEAD?)
+
+```{r}
+#| label: load libraries
+#| echo: false
+#| warning: false
+#| message: false
+
+library(knitr)  
+library(kableExtra)
+library(tidyverse)
+library(stringr)
+```
+
+### Read in Data
+EXPLAIN WHAT I AM READING IN --> LINK TO THE DATA SET THAT IS BEING USED AND THE FUNCTION FILE THAT INCLUDES SOME FUNCTION DEFS THAT I WILL BE USING LATER
+```{r}
+#| label: read in data set + functions
+#| echo: false
+
+strawberry <- read_csv("strawb_mar6.csv", 
+                       col_names = TRUE,
+                       show_col_types = FALSE)
+
+source("my_functions.R")
+```
+
+### Clean Data
+
+CLEAN TABLE TO REMOVE ANY REDUNDANT/NA COLUMNS THAT HAVE ONLY ONE VALUE (OR ARE ALSO ALL NA)
+
+```{r}
+#| label: initial clean of strawberry data to gid rid of one value cols
+#| echo: false
+
+strawberry_clean <- strawberry |> drop_one_value_col()
+```
+
+CENSUS AND SURVEY HOLD DIFFERENT NUMBER AND TYPES OF DATA SO CREATE TWO NEW TABLES TO SEPERATE THE METHOD OF DATA COLLECTIN --\> FIX COMMENTS INSIDE THIS
+
+```{r}
+#| label: split strawberry_clean into census and survey
+#| echo: false
+
+straw_cen <- strawberry_clean |> filter(Program == "CENSUS")
+
+straw_sur <- strawberry_clean |> filter(Program == "SURVEY")
+
+#CHECK IF THE NEW TABLES NEED TO DROP ANY VALUES  TO CLEAN NEW TABLES 
+
+s_cen <- straw_cen |> drop_one_value_col(prt_val = T)
+
+s_sur <- straw_sur |> drop_one_value_col(prt_val = T)
+```
+
+HOW USING SEPERATE DATA DELIMETER AND WHAT IS THE DELIMETER TO SPLIT DIFF VARIABLES INTO SEPERATE TABLES; use select to remove unwanted cols (for data analysis) --\> EXPLAIN GREPL()
+
+#### Clean Survey Data
+
+```{r}
+#| label: clean strawberry survey table (non chemical cols)
+#| echo: false
+
+s_sur_ca_fl <- s_sur |> filter(State == "CALIFORNIA" | State == "FLORIDA")
+
+#SHIFT THE LOCATION OF THIS
+s_sur_ca_fl$`State ANSI`[grepl("STRAWBERRIES -", s_sur_ca_fl$Fruit)] <- s_sur_ca_fl$Fruit[grepl("STRAWBERRIES -", s_sur_ca_fl$Fruit)]
+s_sur_ca_fl$Fruit[grepl("STRAWBERRIES -", s_sur_ca_fl$Fruit)] <- "STRAWBERRIES"
+
+#SHIFT THE LOCATION OF AVG ALL TO THE SAME COLUMN 
+s_sur_ca_fl$Period[grepl("AVG", s_sur_ca_fl$Item)] <- s_sur_ca_fl$Item[grepl("AVG", s_sur_ca_fl$Item)]
+s_sur_ca_fl$Period[grepl("AVG", s_sur_ca_fl$Metric)] <- s_sur_ca_fl$Metric[grepl("AVG", s_sur_ca_fl$Metric)]
+
+# first split up the Fruit column to just have strawberries
+s_sur_ca_fl <- s_sur_ca_fl |> separate_wider_delim(cols = Category,
+                                                   delim = '-',
+                                                   names = c("Category",
+                                                             "item",
+                                                             "Meas Type"),
+                                                   too_many = "error",
+                                                   too_few = "align_start")
+# MOVES AVG INTO MEAS TYPE COL
+s_sur_ca_fl$`Meas Type`[grepl("AVG", s_sur_ca_fl$Period)] <- s_sur_ca_fl$Period[grepl("AVG", s_sur_ca_fl$Period)]
+
+# MOVE ALL VALUES STARTING WITH MEASURED TO METRIC COL (FROM CATEGORY AND ITEM)
+s_sur_ca_fl$Metric[grepl("MEASURED", s_sur_ca_fl$Category)] <- s_sur_ca_fl$Category[grepl("MEASURED", s_sur_ca_fl$Category)]
+s_sur_ca_fl$Metric[grepl("MEASURED", s_sur_ca_fl$Item)] <- s_sur_ca_fl$Item[grepl("MEASURED", s_sur_ca_fl$Item)]
+
+s_sur_ca_fl$Category[grepl("STRAWBERRIES", s_sur_ca_fl$`State ANSI`)] <- s_sur_ca_fl$`State ANSI`[grepl("STRAWBERRIES", s_sur_ca_fl$`State ANSI`)]
+
+s_sur_ca_fl <- s_sur_ca_fl |> select(-Period, -`Week Ending`, -`State ANSI`, -Item)
+
+# MOVE STRAWBERRY COLS BACK TO CATEGORY TO RE SPLIT
+s_sur_ca_fl <- s_sur_ca_fl |> separate_wider_delim(cols = Category,
+                                                   delim = '-',
+                                                   names = c("Category",
+                                                             "Item"),
+                                                   too_many = "error",
+                                                   too_few = "align_start")
+
+s_sur_ca_fl$Item[!is.na(s_sur_ca_fl$item)] <- s_sur_ca_fl$item[!is.na(s_sur_ca_fl$item)]
+s_sur_ca_fl <- s_sur_ca_fl |> select(-item)
+
+# clean up cols by removing leading spaces
+s_sur_ca_fl$Category <- gsub("^\\s+", "", s_sur_ca_fl$Category)
+
+# FIRST QUESTION ASKS ABUT CHEMICALS SO DO SURVEY FIRST 
+# 
+# QUESTION OF INTEREST JUST LOOKS INTO CA AND FL SO FILTER TABLE TO INCLUDE JUST THOSE TOO
+# REMOVE VARIABLES THAT WILL NTO BE USEFUL FOR DATA ANALYSIS (EX: STATE ANSI EX EX)
+
+```
+
+TALK ABOUT HOW TO GO ABOUT CLEANING THE CHEMICAL COLS
+
+```{r}
+#| label: clean strawberry survey data (chemical cols)
+#| echo: false
+
+#SPLIT DOMAIN INTO DOMIAN (CHEMICAL, TOTAL, OTHER) AND TYPE (FUNGICIDE)
+s_sur_ca_fl <- s_sur_ca_fl |> separate_wider_delim(cols = Domain,
+                                                   delim = ',',
+                                                   names = c("Domain",
+                                                             "Type"),
+                                                   too_many = "error",
+                                                   too_few = "align_start")
+
+#SPLIT DOMAIN CATEGORY INTO NAME and CODE --> repeat will be getting rid of as its info is already in the domain and type #columsn just made
+s_sur_ca_fl <- s_sur_ca_fl |> separate_wider_delim(cols = `Domain Category`,
+                                                   delim = ':',
+                                                   names = c("rep",
+                                                             "Name"),
+                                                   too_many = "error",
+                                                   too_few = "align_start")
+# remove repeat column
+s_sur_ca_fl <- s_sur_ca_fl |> select(-rep)
+#SPLIT NEWLY MADE NAME INTO NAME AND CODE
+s_sur_ca_fl <- s_sur_ca_fl |> separate_wider_delim(cols = Name,
+                                                   delim = '=',
+                                                   names = c("Name",
+                                                             "Code"),
+                                                   too_many = "error",
+                                                   too_few = "align_start")
+
+# clean up cols by removing ()
+s_sur_ca_fl$Name <- gsub("^\\s?\\(", "", s_sur_ca_fl$Name)
+s_sur_ca_fl$Name <- gsub("\\)$", "", s_sur_ca_fl$Name)
+
+s_sur_ca_fl$Code <- gsub("^\\s+", "", s_sur_ca_fl$Code)
+s_sur_ca_fl$Code <- gsub("\\)$", "", s_sur_ca_fl$Code)
+
+```
+
+GLIMPSE OF NEWLY CLEANED TABLE --\> INSTEAD OF THIS FORMAT IT MUCH MORE NICELY?? (using KABLE/kablextra)
+
+```{r}
+head(s_sur_ca_fl)
+```
+
+--\> THEN WITHIN THE TWO THE TWO STATES OF INTEREST ARE FLORIDA AND CALIFORNIA SO FILTER THROIUGH THE NEW TABLES TO JUST CONSIDER THOSE TOO STATES
+
+```{r}
+#| label: split cleaned survey data into california and florida
+#| echo: false
+
+s_sur_ca <- s_sur_ca_fl |> filter(State == "CALIFORNIA")
+s_sur_fl <- s_sur_ca_fl |> filter(State == "FLORIDA")
+
+rm(s_sur, straw_sur)
+```
+
+#### Clean Census Data
+HOW USING SEPERATE DATA DELIMETER AND WHAT IS THE DELIMETER TO SPLIT DIFF VARIABLES INTO SEPERATE TABLES; use select to remove unwanted cols (for data analysis) --\> EXPLAIN GREPL()
+
+```{r}
+#| label: clean strawberry census data
+#| echo: false
+
+s_cen_ca_fl <- s_cen |> filter(State == "CALIFORNIA" | State == "FLORIDA")
+s_cen_ca_fl <- s_cen_ca_fl |> select(-`State ANSI`)
+
+# LOOK INTO WHAT VALUES ARE IN THE COMMODITY SECTION
+unique(s_cen_ca_fl$Commodity)
+
+# SEPERATE INTO TWO FURTHER TABLES WHERE COMMODITY == INCOME AND COMMODITY == STRAWBERRIES
+s_cen_ca_fl_inc <- s_cen_ca_fl |> filter(Commodity == "INCOME, NET CASH FARM")
+s_cen_ca_fl_str <- s_cen_ca_fl |> filter(Commodity == "STRAWBERRIES")
+
+#NOW DROP ANY COLS THAT HAVE ONLY ONE VALUE
+s_cen_ca_fl_inc <- s_cen_ca_fl_inc |> drop_one_value_col(prt_val = T)
+s_cen_ca_fl_str <- s_cen_ca_fl_str |> drop_one_value_col(prt_val = T)
+```
+NOW JUST LOOK PARTICULARLY WITHIN THE INCOME DATA TABLE
+```{r}
+#| label: clean strawberry census data (commodity = income)
+#| echo: false
+
+#GET RID OF THE LEADING "OF OPERATIONS - " IN ITEM COLUMN
+s_cen_ca_fl_inc <- s_cen_ca_fl_inc |> separate_wider_delim(cols = Item,
+                                                   delim = 'F ',
+                                                   names = c("remove",
+                                                             "Type"),
+                                                   too_many = "error",
+                                                   too_few = "align_start")
+
+# NOW SEPARATE NEW TYPE COLUMN INTO TYPE OR Inc Type
+s_cen_ca_fl_inc <- s_cen_ca_fl_inc |> separate_wider_delim(cols = Type,
+                                                   delim = '- ',
+                                                   names = c("Type",
+                                                             "Inc Type"),
+                                                   too_many = "error",
+                                                   too_few = "align_start")
+
+# NOW GET RID OF THE REDUNANT/REPEATED DOMAIN INDICATOR IN DOMAIN CATEGORY SECTION
+s_cen_ca_fl_inc <- s_cen_ca_fl_inc |> separate_wider_delim(cols = `Domain Category`,
+                                                   delim = ': ',
+                                                   names = c("rep",
+                                                             "Range"),
+                                                   too_many = "error",
+                                                   too_few = "align_start")
+
+# further clean up table -> get rid of reduntant columns to remove and get rid of () in Range
+s_cen_ca_fl_inc <- s_cen_ca_fl_inc |> select(-remove, -rep)
+
+s_cen_ca_fl_inc$Range <- gsub("^\\s?\\(", "", s_cen_ca_fl_inc$Range)
+s_cen_ca_fl_inc$Range <- gsub("\\)$", "", s_cen_ca_fl_inc$Range)
+```
+
+NOW FIX HOW THE MONEY VALUES ARE DEPICTED IN THE TABLE (MAKE THEM NUMERIC)
+```{r}
+#| label: clean strawberry census data (commodity = income) - split range into numerical values
+#| echo: false
+#MAKE LOW AND HIGH COLS AND MAKE THEM AS $? --> FARM SALES ($)
+# SEPARATE RANGE INTO LOW AND HIGH VLAUES 
+s_cen_ca_fl_inc <- s_cen_ca_fl_inc |> separate_wider_delim(cols = Range,
+                                                   delim = ' TO ',
+                                                   names = c("Lower",
+                                                             "Upper"),
+                                                   too_many = "error",
+                                                   too_few = "align_start")
+
+#USE GSUB TO GET RID OF TRAILING SUFFIXES (ACRES OR $)
+s_cen_ca_fl_inc$Upper <- gsub("ACRES", "", s_cen_ca_fl_inc$Upper)
+s_cen_ca_fl_inc$Upper <- gsub("\\$", "", s_cen_ca_fl_inc$Upper)
+
+# get rid of the less than or more than to be just a numerical range
+s_cen_ca_fl_inc$Lower <- gsub(" OR MORE \\$", "", s_cen_ca_fl_inc$Lower)
+s_cen_ca_fl_inc$Lower <- gsub(" OR MORE ACRES", "", s_cen_ca_fl_inc$Lower)
+
+#GET RID OF LESS THAN
+s_cen_ca_fl_inc$Lower <- gsub("LESS THAN ", "0 -", s_cen_ca_fl_inc$Lower)
+s_cen_ca_fl_inc$Lower <- gsub("1,000 \\$", "999", s_cen_ca_fl_inc$Lower)
+s_cen_ca_fl_inc <- s_cen_ca_fl_inc |> separate_wider_delim(cols = Lower,
+                                                   delim = ' -',
+                                                   names = c("Lower",
+                                                             "up"),
+                                                   too_many = "error",
+                                                   too_few = "align_start")
+# MOVE VALS FROM TEMP COL up TO ACTUAL COL UPPER
+s_cen_ca_fl_inc$Upper[grepl("999", s_cen_ca_fl_inc$up)] <- s_cen_ca_fl_inc$up[grepl("999", s_cen_ca_fl_inc$up)]
+s_cen_ca_fl_inc <- s_cen_ca_fl_inc |> select(-up)
+
+#FOCUS ON PRODUCERS + FARM SALES!!! 
+#make a two var rable comparing operator farm sales for california and florida
+```
+
+SEPERATE NEWWLY CLEANED STRAWBERRY DATASET INTO CALIFORNIA AND FLORIDA AND THEN SEPERATE EACH INTO OPERATORS AND PRODUCERS SO JUST PRODUCERS CAN BE LOOKED INTO 
+```{r}
+#| label: split cleaned census data (commodity = income) by both state and type
+#| echo: false
+
+#SPLIT THE DATA BY STATE
+s_cen_ca <- s_cen_ca_fl_inc |> filter(State == "CALIFORNIA")
+s_cen_fl <- s_cen_ca_fl_inc |> filter(State == "FLORIDA")
+
+#SPLIT THE STATE DATA BY OPERATORS VS PRODUCES
+s_cen_ca_op <- s_cen_ca |> filter(Type == "OPERATIONS ")
+s_cen_ca_pr <- s_cen_ca |> filter(Type == "PRODUCERS ")
+
+s_cen_fl_op <- s_cen_fl |> filter(Type == "OPERATIONS ")
+s_cen_fl_pr <- s_cen_fl |> filter(Type == "PRODUCERS ")
+```
+
+NOW LOOK PARTICULARLY IN THE STRAWBERRY TABLE TO LEARN ABOUT PRODUCTION AND SALES 
+```{r}
+#| label: clean strawberry census data (commodity = strawberry)
+#| echo: false
+
+#MOVE ALL THE ENTRIES WITH MEASURED TO THE METRIC COL (FROM THE ITEM COL)
+s_cen_ca_fl_str$Metric[grepl("MEASURED", s_cen_ca_fl_str$Item)] <- s_cen_ca_fl_str$Item[grepl("MEASURED", s_cen_ca_fl_str$Item)]
+
+# MOVES ALL ENTRIES WITH "ORGANIC -" TO ITEM COLUMN FROM CATEGORY (ALL ARE ORGANIC SO AFTER THIS MOVE CAN GET RID OF THE COLUMN AS IT ONLY HAS ONE VALUE)
+s_cen_ca_fl_str$Item[grepl("ORGANIC -", s_cen_ca_fl_str$Category)] <- s_cen_ca_fl_str$Category[grepl("ORGANIC -", s_cen_ca_fl_str$Category)]
+
+s_cen_ca_fl_str <- s_cen_ca_fl_str |> select(-Category)
+
+#cleaned TABLE 
+head(s_cen_ca_fl_str)
+```
+```{r}
+#| label: split cleaned census data (commodity = strawberry) by state
+#| echo: false
+
+s_cen_ca_str <- s_cen_ca_fl_str |> filter(State == "CALIFORNIA")
+s_cen_fl_str <- s_cen_ca_fl_str |> filter(State == "FLORIDA")
+```
+
+
+### Data Analysis
+EXPLAIN WHAT I WILL BE LOOKING AT HERE --> THE QUESTIONS THAT I WILL BE CONSIDERING
+
+#### Data Analysis - Chemicals
+
+INVESTIGATE THE USE OF CHEMICALS IN CALIFORNIA AND FLORIDA (WHICH TYPE OF CHEMICAL IS MOST USED IN WHICH STATE) CHANGE THE TYPE OF PLOT USED FOR BOTH OF THESE OR AT LEAST MAKE THEM VISUALLY LOOK DIFFERENT THAT THE OTHER ONE
+
+```{r}
+#| label: create plot to investigate type of chemical use 
+#| echo: false
+#MAKE THIS AND THE NEXT PLOT A TWO VARIABLE BAR PLOT
+ca_chem_sum <- s_sur_ca %>%
+  group_by(Domain, Type) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+
+#MAKE A TABLE THAT SHOWS THESE TWO????
+
+ca_chem_sum$State <- c("CALIFORNIA")
+
+fl_chem_sum <- s_sur_fl %>%
+  group_by(Domain, Type) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+
+fl_chem_sum$State <- c("FLORIDA")
+
+ca_fl_chem_sum <- rbind(ca_chem_sum, fl_chem_sum) 
+#REPLACE NA WITH FERTILIZER!
+
+ggplot(ca_fl_chem_sum, aes(fill=State, y=count, x=Type)) +
+  geom_bar(position='dodge', stat='identity') +
+  geom_text(aes(label = count), position = position_dodge(width = 0.9), vjust = -0.5) +
+  ggtitle('Chemical Type Distribution in California and Florida (2020-2023)') +
+  xlab('Chemical Type') +
+  ylab('Count') +
+  scale_fill_manual('State', values=c('seagreen4','slategray2'))
+```
+
+
+MOST COMMONLY USED CHEMICALS
+
+DO THE CHEMICAL DATA ANALYSIS --\> FIGURE OUT HOW TO PICK THE THREE AND CONTRAST THEIR USE
+--> for a roow select the category and item that is associated with a speciifc chemical (to see how it is used)
+--> find the top twenty and see which three are top used between the three?
+
+```{r}
+# first make the value col numerical
+s_sur_ca$Value <- as.numeric(gsub(",", "", s_sur_ca$Value))
+s_sur_fl$Value <- as.numeric(gsub(",", "", s_sur_fl$Value))
+# Calculate total usage for California (only "LB" measurements)
+
+tot_use_lb_ca <- s_sur_ca %>%
+  filter(Metric == " MEASURED IN LB" & Domain != "TOTAL)" & Domain != "FERTILIZER") %>%
+  group_by(Name) %>%
+  summarise(`Total Usage (LB)` = sum(Value, na.rm = TRUE)) %>%
+  arrange(desc(`Total Usage (LB)`))
+
+# Calculate total usage for Florida (only "LB" measurements)
+tot_use_lb_fl <- s_sur_fl %>%
+  filter(Metric == " MEASURED IN LB" & Domain != "TOTAL)" & Domain != "FERTILIZER") %>%
+  group_by(Name) %>%
+  summarise(`Total Usage (LB)` = sum(Value, na.rm = TRUE)) %>%
+  arrange(desc(`Total Usage (LB)`))
+
+# Extract the top 5 chemicals for each state
+top_chem_ca <- tot_use_lb_ca |> slice(2:11)
+top_chem_fl <- tot_use_lb_fl |> slice(2:11)
+
+top_chem_ca |>
+  kbl(caption = "Top 10 Most Used Chemicals in California") |> 
+  kable_classic(full_width = F, html_font = "Cambria")
+
+top_chem_fl |>
+  kbl(caption = "Top 10 Most Used Chemicals in Florida") |> 
+  kable_classic(full_width = F, html_font = "Cambria")
+
+top_chem_ca$State <- "California"
+top_chem_fl$State <- "Florida"
+
+# Combine both tables into one
+colnames(top_chem_fl) <- paste(colnames(top_chem_fl), "_fl", sep = "")
+top_chem <- cbind(top_chem_ca, top_chem_fl)
+top_chem_table <- top_chem |> select(Name, `Total Usage (LB)`, Name_fl, `Total Usage (LB)_fl`)
+colnames(top_chem_table) <- gsub("_fl", "", colnames(top_chem_table))
+
+# Display the combined table using kable
+top_chem_table |>
+  kbl(caption = "Top 10 Most Used Chemicals in California and Florida") |>
+  kable_classic(full_width = F, html_font = "Cambria") |> 
+  add_header_above(c("California" = 2, "Florida" = 2))
+```
+BASED ON THE ABOVE TABLE IT CAN BE SEEN THAT THE THREE MOST USED CHEMICALS COMMON TO BOTH CALIFORNIA AND FLORIDA ARE CAPTAN, THIRAM, AND CYPRODINIL ALL OF WHICH ARE TYPE FUNGICIDE PERHAPS IMPLYING THAT COLLECTIVELY FUNGICIDE ARE THE LARGEST THREAT TO STRAWBERRY GROIWONG
+
+LOOK AT HOW THE USAGE OF THESE THREE CHEMICALS CHANGE PER YEAR FOR CALIFORNIA AND FLORIDA
+```{r}
+top_3chem_ca <- top_chem_ca |> filter(Name == "CAPTAN " | Name == "THIRAM " | Name =="CYPRODINIL ")
+top_3chem_fl <- top_chem_fl |> filter(Name_fl == "CAPTAN " | Name_fl == "THIRAM " | Name_fl =="CYPRODINIL ")
+# Calculate yearly trends for the top 5 chemicals in California
+yr_chem_ca <- s_sur_ca %>%
+  filter(Name %in% top_3chem_ca$Name, Metric == " MEASURED IN LB" & Domain != "TOTAL)" & Domain != "FERTILIZER") %>%
+  group_by(Year, Name) %>%
+  summarise(yearly_usage = sum(Value, na.rm = TRUE))
+
+# Calculate yearly trends for the top 5 chemicals in Florida
+yr_chem_fl <- s_sur_fl %>%
+  filter(Name %in% top_3chem_fl$Name_fl, Metric == " MEASURED IN LB" & Domain != "TOTAL)" & Domain != "FERTILIZER") %>%
+  group_by(Year, Name) %>%
+  summarise(yearly_usage = sum(Value, na.rm = TRUE))
+
+
+ggplot(yr_chem_fl, aes(x = Year, y = yearly_usage, color = Name, group = Name)) +
+  geom_line() +                            # Adds lines
+  geom_point() +                           # Adds points at each year
+  labs(title = "Yearly Usage of Chemicals Over Two Years",
+       x = "Year",
+       y = "Yearly Usage (Pounds)",
+       color = "Chemical Type") +
+  theme_minimal() +                        # Clean theme
+  scale_color_manual(values = c("red", "blue", "green"))
+
+line_graph_florida <- ggplot(chemical_trends_lb_florida, aes(x = Year, y = yearly_usage, color = name, group = name)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  labs(
+    title = "Yearly Usage Trends of Top 5 Chemicals in Florida (2018-2023) - LB Only",
+    x = "Year",
+    y = "Yearly Usage (lbs)",
+    color = "Chemical Name"
+  ) +
+  theme_minimal()
+```
+
+
+
+#### Data Analysis - Income
+
+INCOME ANALYSIS
+- FARM SALES
+LOOK AT NET INCOME BASED OFF FARM SALES FROM PRODUCERS IN CA VS FL
+```{r}
+#| label: create figures to visualize net income by farm sales
+#| echo: false
+
+#CALIFORNIA 
+netinc_ca_farm <- s_cen_ca_pr |> filter(Domain == "FARM SALES")
+# COVERT CHAR TO NUM TO REORDER ROWS BASED ON VALUES
+netinc_ca_farm$Lower <- as.numeric(gsub(",", "", netinc_ca_farm$Lower))
+netinc_ca_farm$Upper <- as.numeric(gsub(",", "", netinc_ca_farm$Upper))
+netinc_ca_farm <- netinc_ca_farm[order(netinc_ca_farm$Lower, decreasing = F), ]
+
+#FLORIDA
+netinc_fl_farm <- s_cen_fl_pr |> filter(Domain == "FARM SALES")
+# COVERT CHAR TO NUM TO REORDER ROWS BASED ON VALUES
+netinc_fl_farm$Lower <- as.numeric(gsub(",", "", netinc_fl_farm$Lower))
+netinc_fl_farm$Upper <- as.numeric(gsub(",", "", netinc_fl_farm$Upper))
+netinc_fl_farm <- netinc_fl_farm[order(netinc_fl_farm$Lower, decreasing = F), ]
+colnames(netinc_fl_farm) <- paste(colnames(netinc_fl_farm), "_fl", sep = "")
+
+netinc_farm <- cbind(netinc_ca_farm, netinc_fl_farm)
+netinc_farm_table <- netinc_farm |> select(Lower, Upper, Value, `CV (%)`, Value_fl, `CV (%)_fl`)
+
+# MAKE THE VALUE COLUMNS EASIER TO READ
+# Remove commas, convert to numeric
+netinc_farm_table$Value <- as.numeric(gsub(",", "", netinc_farm_table$Value))
+# Create a more concise format for money (e.g., converting to millions)
+netinc_farm_table$Value <- scales::label_dollar(scale = 1e-6, suffix = "M")(netinc_farm_table$Value)
+netinc_farm_table$Value_fl <- as.numeric(gsub(",", "", netinc_farm_table$Value_fl))
+# Create a more concise format for money (e.g., converting to millions)
+netinc_farm_table$Value_fl <- scales::label_dollar(scale = 1e-6, suffix = "M")(netinc_farm_table$Value_fl)
+
+# RE NAME THE COLUMNS TO GET RID OF THE _FL
+colnames(netinc_farm_table) <- gsub("_fl", "", colnames(netinc_farm_table))
+
+# TABLE TO REPRESENT THE DATA
+netinc_farm_table |>
+  kbl(caption = "California and Florida Average Net Income in 2022 by Farm Sales") |> 
+  kable_classic(full_width = F, html_font = "Cambria") |> 
+  add_header_above(c("Farm Sales ($)" = 2, "California" = 2, "Florida" = 2))
+```
+
+FLORIDA STARTS MAKING A PROFITABLE INCOME AT AN EARLIER FARM SALE RANGE COMPARED TO CALIFORNIA --> A POSITIVE NET INCOME STARTS AS FARM SALES ARE BETWEEN 50000 TO 99999 WHILE CALIFORNIA ONLY STARTS SEEING A POSITIVE NET INCOME WHEN FARM SALES ARE BETWEEN 250000 TO 499999
+
+
+
+INSIGHTS: 
+1. Difference in Profitability Threshold:
+Florida starts making a profitable income at a much lower farm sales range (between $50,000 to $99,999).
+
+In contrast, California only begins seeing a positive net income when farm sales are between $250,000 to $499,999.
+
+This indicates that, on average, Florida farmers can start turning a profit at lower levels of farm sales compared to California farmers. Florida may have lower operational or fixed costs, better market conditions, or more favorable climate factors, allowing farms to become profitable at a smaller scale. California, on the other hand, may have higher costs or more competition, meaning it requires higher sales to reach profitability.
+
+2. Cost Structures:
+The fact that Florida becomes profitable at lower sales could also point to differences in cost structures between the two states.
+
+Florida farmers might have lower labor, land, or production costs, which allows them to become profitable at a lower sales threshold.
+
+California, with its larger and more established agricultural industry, might experience higher input costs (labor, land, water, regulations, etc.), meaning farms need to sell more to cover these expenses and generate a profit.
+
+
+
+-ORGANIC STRAW PROCESSING VS FRESH SALES PRICES?
+
+FLORIDA HAS NO PROCESSING DATA AND CALIFORNIA ONLY HAS HIDDEN VALUES FOR FRESH MARKET AND PROCESSING SALES IN $ SO WILL COMPARE ORGANIC + FRESH MARKET SALES MEASURE BY CWT (WEIGHT/VOLUME) BETWEEN THE TWO STATES
+
+CALIFORNIA HAS INFO FOR ALL THREE WHEN SALES ARE MEASURED BY CWT SO WILL OCMPARE TO SEE WHICH METHOD PRODUCES THE MOST SALES 
+```{r}
+#| label: create figure to compare organis, fresh market, and processing sales in california
+#| echo: false
+
+#TAKE JUST CALIFRONIA DATA MEASURED IN CWT
+s_cen_ca_cwt <- s_cen_ca_str |> filter(Metric == " MEASURED IN CWT")
+
+#GET RID OF " - SALES" AS IT IS REPETIITVE FOR LABELING
+s_cen_ca_cwt$Item <- gsub(" - SALES", "", s_cen_ca_cwt$Item)
+
+# MAKE VALUES FROM CHAR TO NUMERIC
+s_cen_ca_cwt$Value <- as.numeric(gsub(",", "", s_cen_ca_cwt$Value))*1e-6
+
+ggplot(s_cen_ca_cwt, aes(x = Item, y = Value)) +
+  geom_bar(stat = "identity", fill = "seagreen4") +  # Ensure stat="identity" to use actual values
+  geom_text(aes(label = Value), position = position_dodge(width = 0.9), vjust = -0.5) +
+  labs(title = "Sale Methods by Weight for California",
+       x = "Sale Type",
+       y = "Value (in M CWT)",
+       fill = "State")
+
+```
+IN CALIFORNIA A HUGE MAJORITY OF THE SALES COME FROM FRESH MARKET AND ORGANIC COMPARED TO PROCESSING --< CONSUMERS CARE MORE AND ARE MUCH MORE WILLING TO BY FRESH AND ORGANISH FRUITS COMPARED TO PROCESSED ONES 
+
+
+
+```{r}
+#| label: create figure to compare organic + fresh market sales between california and florida
+#| echo: false
+
+#TAKE JUST ORGANIC + FRESH MARKET SALE VALUES
+s_cen_sales <- s_cen_ca_fl_str |> filter(Item == " ORGANIC - SALES" | Item == " FRESH MARKET - SALES")
+
+#TAKE JUST MEASURED BY CWT TO HVAE VALUES IN ALL CASES
+s_cen_sales <- s_cen_sales |> filter(Metric == " MEASURED IN CWT")
+
+#GET RID OF " - SALES" AS IT IS REPETIITVE FOR LABELING
+s_cen_sales$Item <- gsub(" - SALES", "", s_cen_sales$Item)
+
+# MAKE VALUES FROM CHAR TO NUMERIC
+s_cen_sales$Value <- as.numeric(gsub(",", "", s_cen_sales$Value))*1e-6
+
+ggplot(s_cen_sales, aes(x = Item, y = Value, fill = State)) +
+  geom_bar(stat = "identity", position = "dodge") +  # position="dodge" places bars side by side
+  geom_text(aes(label = Value), position = position_dodge(width = 0.9), vjust = -0.5) +
+  labs(title = "Organic and Fresh Market Sales by Weight for California and Florida",
+       x = "Sale Type",
+       y = "Value (in M CWT)",
+       fill = "State") +
+  scale_fill_manual('State', values=c('seagreen4','slategray2'))
+
+```
+
