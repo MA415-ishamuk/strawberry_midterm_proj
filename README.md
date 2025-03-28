@@ -24,7 +24,14 @@ MA415_midterm_proj.qmd - Quarto Document comprised of project code
 
 MA415_midterm_proj.html - HTML version of code and outputs from Quarto Document 
 
-MA415_midterm_proj.pdf - PDF version of finalized MA415 Midterm Project (no code, just figures and commentary)
+MA415 Midterm Project - Isha Mukundan.pdf - PDF version of finalized MA415 Midterm Project (no code, just figures and commentary)
+
+### .CSV Files From Code
+survey_clean.csv - cleaned survey dataset
+
+census_inc_clean.csv - cleaned census dataset where Commodity was INCOME
+
+census_str_clean.csv - cleaned strawberry dataset where Commodity was STRAWBERRIES
 
 ## Citations
 Function Help
